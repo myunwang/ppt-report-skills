@@ -1,0 +1,75 @@
+<!--
+  TEMPLATE · kpi-overview
+  用途：月度/项目交付总览页（多板块 × 多卡片）
+  搭配：scripts/slide-1.js 通常静态，无图表
+-->
+<div class="slide" id="s1">
+  <div class="slide-label">月度总览</div>
+  <div class="slide-title">{{TITLE_HERE}}</div>
+  <div class="slide-subtitle">
+    {{ONE_SENTENCE_CONCLUSION_WITH_KEY_NUMBERS}}
+  </div>
+
+  <div class="overview-grid">
+    <!-- ══ 板块①：策略需求 ══ -->
+    <div class="overview-col col-strategy">
+      <div class="overview-col-header">
+        <div class="col-meta">
+          <span class="col-name">策略需求</span>
+          <span class="col-sub">P0 / P1 推荐策略与功能</span>
+        </div>
+        <div class="col-num-wrap"><span class="col-num">5</span><span class="col-num-unit">个</span></div>
+      </div>
+      <div class="overview-col-body">
+        <div class="ov-card">
+          <div class="ov-card-head">
+            <span class="dot ok"></span>
+            <span class="ov-card-title">需求 A</span>
+            <span class="tag tag-p0">P0</span>
+            <span class="ov-card-status done">✓ 已上线</span>
+          </div>
+          <div class="ov-card-meta">区域 · 时间 · 关键指标 <strong>X%</strong></div>
+        </div>
+        <!-- ... 其他卡片复制 -->
+      </div>
+    </div>
+
+    <!-- ══ 板块②：数据看板 ══ -->
+    <div class="overview-col col-data">
+      <div class="overview-col-header">
+        <div class="col-meta">
+          <span class="col-name">数据看板</span>
+          <span class="col-sub">N 已上线 · M 离线同步</span>
+        </div>
+        <div class="col-num-wrap"><span class="col-num">3</span><span class="col-num-unit">个</span></div>
+      </div>
+      <div class="overview-col-body">
+        <!-- ov-card 复制 -->
+      </div>
+    </div>
+
+    <!-- ══ 板块③：生态/补充 ══ -->
+    <div class="overview-col col-eco">
+      <div class="overview-col-header">
+        <div class="col-meta">
+          <span class="col-name">生态建设</span>
+          <span class="col-sub">主动排雷 · 推动闭环</span>
+        </div>
+        <div class="col-num-wrap"><span class="col-num">2</span><span class="col-num-unit">件</span></div>
+      </div>
+      <div class="overview-col-body">
+        <!-- ov-card 复制 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+  对应 styles/slide-1.css 需要包含：
+  - .overview-grid （2 列 × 2 行 grid，左 strategy 跨 2 行）
+  - .overview-col / .overview-col-header / .overview-col-body
+  - .ov-card / .ov-card-head / .ov-card-meta / .ov-card-status
+  - .col-num / .col-num-unit
+  - 板块配色变量 (--col-accent, --col-tint)
+  详见 components.md。
+-->

@@ -1,0 +1,69 @@
+<!--
+  TEMPLATE · two-country
+  用途：左右两个对象（国家/渠道/产品线）的对照
+        顶部 4 KPI + 下方两个 metric 表卡片
+-->
+<div class="slide" id="s2">
+  <div class="slide-label">重点需求 / 业务对照</div>
+  <div class="slide-title">{{TITLE}} · {{对象A}} / {{对象B}}</div>
+  <div class="slide-subtitle">
+    {{核心结论 — 包含核心数字}}：<strong>X%</strong>，<span class="pos">+Y%</span>
+  </div>
+
+  <div class="s2-grid">
+    <!-- 顶部一行：4 个核心指标 -->
+    <div class="kpi-row">
+      <div class="metric-up-card">
+        <div class="metric-up-num">{value}</div>
+        <div class="metric-up-label">{主指标}</div>
+        <div class="metric-up-sub">{口径说明}</div>
+      </div>
+      <div class="metric-up-card">
+        <div class="metric-up-num">{value}</div>
+        <div class="metric-up-label">{次指标}</div>
+        <div class="metric-up-sub">{说明}</div>
+      </div>
+      <div class="metric-up-card">
+        <div class="metric-up-num">{value}<span style="font-size:14px;">{单位}</span></div>
+        <div class="metric-up-label">{总量指标}</div>
+        <div class="metric-up-sub">{补充}</div>
+      </div>
+      <div class="metric-up-card">
+        <div class="metric-up-num">{value}<span style="font-size:14px;">{单位}</span></div>
+        <div class="metric-up-label">{收入指标}</div>
+        <div class="metric-up-sub">{补充}</div>
+      </div>
+    </div>
+
+    <!-- 下方：两个对象左右排布 -->
+    <div class="country-row">
+      <div class="card">
+        <div class="country-card-head">
+          <span class="country-name a">{对象 A 名称}</span>
+          <span class="country-tag a-tag">{tag / 状态}</span>
+        </div>
+        <div class="metric-row"><span class="metric-name">{指标 1}</span><span class="metric-after">{value}</span></div>
+        <div class="metric-row"><span class="metric-name">{指标 2}</span><span class="metric-after">{value}</span></div>
+        <div class="metric-row"><span class="metric-name">{关键指标}</span><span class="metric-after" style="color:var(--accent3);font-weight:700;">{value}</span></div>
+        <!-- ... 6-10 行 metric-row 平分高度 -->
+      </div>
+      <div class="card">
+        <div class="country-card-head">
+          <span class="country-name b">{对象 B 名称}</span>
+          <span class="country-tag b-tag">{tag / 状态}</span>
+        </div>
+        <div class="metric-row"><span class="metric-name">{指标 1}</span><span class="metric-after">{value}</span></div>
+        <!-- ... -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+  styles/slide-N.css 应包含：
+  - #s2 .s2-grid (flex column, gap 14)
+  - #s2 .kpi-row (grid 4 列)
+  - #s2 .country-row (grid 1fr 1fr, flex:1)
+  - #s2 .country-card-head / .country-name / .country-tag
+  - 内部 metric-row 用 flex:1 平分卡片高度
+-->

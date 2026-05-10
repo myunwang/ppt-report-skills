@@ -1,0 +1,109 @@
+<!--
+  TEMPLATE · three-phase
+  用途：三阶段闭环（时间线） + 多个图表
+        左列竖向阶段时间线，右列 2×2 图表网格
+-->
+<div class="slide" id="s4">
+  <div class="slide-label">重点需求 · 阶段闭环</div>
+  <div class="slide-title">{{项目/方向}} · 三阶段闭环</div>
+  <div class="slide-subtitle">
+    <span class="pos">{亮点结论}</span> — 关键成果一句结论 <strong>X×</strong> 杠杆
+  </div>
+
+  <div class="phase-layout">
+    <!-- 左列：竖向 3 阶段时间线 -->
+    <div class="phase-timeline-v">
+      <!-- Phase 1 -->
+      <div class="phase-box" style="border-top:2px solid var(--accent);">
+        <div class="phase-date">PHASE 01 · {日期}</div>
+        <div class="phase-title">{阶段一标题}</div>
+        <div class="phase-item"><div class="phase-item-dot"></div><div class="phase-item-text">阶段一动作 1</div></div>
+        <div class="phase-item"><div class="phase-item-dot"></div><div class="phase-item-text">阶段一动作 2</div></div>
+      </div>
+      <div class="phase-arrow-v">↓</div>
+      <!-- Phase 2 -->
+      <div class="phase-box" style="border-top:2px solid var(--warn);">
+        <div class="phase-date">PHASE 02 · {日期}</div>
+        <div class="phase-title">发现问题 → 推动复审</div>
+        <div class="phase-item"><div class="phase-item-dot" style="background:var(--warn);"></div><div class="phase-item-text">问题 1，<strong style="color:var(--warn);">关键数字</strong></div></div>
+        <div class="country-compare">
+          <div class="cc-card">
+            <div class="cc-country">对象 A</div>
+            <div class="cc-row"><span class="cc-k">维度 1</span><span class="cc-v">4,380</span></div>
+            <div class="cc-row"><span class="cc-k">维度 2</span><span class="cc-v highlight">43%</span></div>
+          </div>
+          <div class="cc-card">
+            <div class="cc-country">对象 B</div>
+            <div class="cc-row"><span class="cc-k">维度 1</span><span class="cc-v">2,996</span></div>
+            <div class="cc-row"><span class="cc-k">维度 2</span><span class="cc-v" style="color:var(--accent3);">63%</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="phase-arrow-v">↓</div>
+      <!-- Phase 3 -->
+      <div class="phase-box" style="border-top:2px solid var(--accent3);">
+        <div class="phase-date">PHASE 03 · {日期}</div>
+        <div class="phase-title">{阶段三标题}</div>
+        <div class="phase-item"><div class="phase-item-dot" style="background:var(--accent3);"></div><div class="phase-item-text">阶段三关键动作</div></div>
+        <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);border-radius:8px;">
+            <span style="font-size:12px;color:var(--text2);">{指标 A}</span>
+            <span class="metric-delta delta-pos">+X.XX%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:8px;">
+            <span style="font-size:12px;color:var(--text2);">{指标 B}</span>
+            <span class="metric-delta delta-neg">-X.XX%</span>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.6;">阶段三结论说明。</div>
+      </div>
+    </div>
+
+    <!-- 中列：{维度 A 占比} -->
+    <div class="phase-charts col-mat">
+      <div class="chart-card mat-card">
+        <div class="chart-card-header">
+          <div class="chart-card-title">📘 对象 A · <span style="color:var(--accent3);">{维度 A 占比}</span></div>
+          <div class="chart-card-note">{口径说明 A}</div>
+        </div>
+        <div class="chart-card-body"><div id="chart-mat-a"></div></div>
+      </div>
+      <div class="chart-card mat-card">
+        <div class="chart-card-header">
+          <div class="chart-card-title">📗 对象 B · <span style="color:var(--accent3);">{维度 A 占比}</span></div>
+          <div class="chart-card-note">{口径说明 A}</div>
+        </div>
+        <div class="chart-card-body"><div id="chart-mat-b"></div></div>
+      </div>
+    </div>
+
+    <!-- 右列：{维度 B 占比} -->
+    <div class="phase-charts col-flow">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-card-title">📘 对象 A · <span style="color:var(--accent2);">{维度 B 占比}</span></div>
+          <div class="chart-card-note">{口径说明 B}</div>
+        </div>
+        <div class="chart-card-body"><div id="chart-id-a"></div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-card-title">📗 对象 B · <span style="color:var(--accent2);">{维度 B 占比}</span></div>
+          <div class="chart-card-note">{口径说明 B}</div>
+        </div>
+        <div class="chart-card-body"><div id="chart-id-b"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+  对应 slide-N.css 需要：
+  - #s4 .phase-layout { grid-template-columns: minmax(300px, 0.95fr) 1fr 1fr; }
+  - #s4 .phase-charts { grid-template-rows: 1fr 1fr; }
+  - #s4 .mat-card { background: linear-gradient(180deg, rgba(5,150,105,0.04), var(--surface)); }
+
+  对应 slide-N.js 应调用：
+  - renderShare100('chart-mat-a', ['上线前', '上线后'], LABELS, PRE, POST)
+  - 共 4 个 chart
+-->

@@ -1,0 +1,71 @@
+<!--
+  TEMPLATE · supply-bars
+  用途：分类条形（Top-N mini-bar） + 总趋势折线 + 原理说明
+        左侧 2×2 对象的类目 mini-bar，右侧上图下文
+-->
+<div class="slide" id="s6">
+  <div class="slide-label">{页面标签}</div>
+  <div class="slide-title">{页面主题}</div>
+  <div class="slide-subtitle">
+    {一句结论 — 含 N 个关键数字} · 例：A <span class="warn">{value}</span> · B <span class="neg">{value}</span>
+  </div>
+
+  <div class="supply-layout">
+    <!-- 左：4 个对象的类目 mini-bar -->
+    <div class="supply-charts">
+      <div class="chart-wrap">
+        <div class="chart-country">{对象 A}</div>
+        <div class="chart-rate" style="color:var(--accent2);">{value}</div>
+        <div class="chart-bar-wrap" id="bars-a"></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-country">{对象 B}</div>
+        <div class="chart-rate" style="color:var(--warn);">{value}</div>
+        <div class="chart-bar-wrap" id="bars-b"></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-country">{对象 C}</div>
+        <div class="chart-rate" style="color:var(--warn);">{value}</div>
+        <div class="chart-bar-wrap" id="bars-c"></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-country">{对象 D}</div>
+        <div class="chart-rate" style="color:var(--danger);">{value}</div>
+        <div class="chart-bar-wrap" id="bars-d"></div>
+      </div>
+    </div>
+
+    <!-- 右：趋势折线 + 原理说明 -->
+    <div class="supply-insight">
+      <div class="insight-box" style="display:flex;flex-direction:column;flex:1;">
+        <div class="insight-title">{趋势图标题，含时间口径}</div>
+        <div style="flex:1;min-height:0;position:relative;">
+          <div id="chart-trend" style="width:100%;height:100%;"></div>
+        </div>
+      </div>
+      <div class="insight-box" style="border-left:3px solid var(--accent);">
+        <div class="insight-title">{要科普的问题，反问句更好}</div>
+        <div class="insight-text">
+          {原理说明 — 用 strong 标关键概念}<br><br>
+          {举例数字或类比，让抽象问题可感知}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+  对应 slide-N.css 应包含：
+  .supply-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; min-height: 0; }
+  .supply-charts { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; }
+  .chart-wrap { ... padding 14, flex column, overflow:hidden }
+  .chart-country / .chart-rate / .chart-bar-wrap (flex column)
+  .supply-insight { display: flex; flex-direction: column; gap: 12px; }
+
+  对应 slide-N.js：
+    renderMiniBars('bars-a', D.a, '#06b6d4');
+    renderMiniBars('bars-b', D.b, '#f59e0b');
+    renderMiniBars('bars-c', D.c, '#10b981');
+    renderMiniBars('bars-d', D.d, '#ef4444');
+    renderMultiTrend('chart-trend', D.trendLabels, D.trend, {'对象 A':'#06b6d4', '对象 B':'#f59e0b', '对象 C':'#10b981', '对象 D':'#ef4444'});
+-->

@@ -1,0 +1,48 @@
+<!--
+  TEMPLATE · multi-trend
+  用途：多对象（如 4 国 / 4 渠道）日级时间趋势汇总
+        2×2 chart-card 网格 + 顶部里程碑图例
+-->
+<div class="slide" id="s5">
+  <div class="slide-label">趋势汇总</div>
+  <div class="slide-title">{{N}} 个对象的日级趋势对比</div>
+  <div class="slide-subtitle">
+    {{结论：哪些对象在哪个里程碑后回升 / 下降}}
+  </div>
+
+  <!-- 里程碑色例 -->
+  <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-size:10px;color:var(--text3);font-family:var(--font-mono);">
+    <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#06b6d4;"></span>W3 里程碑 1</span>
+    <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#f59e0b;"></span>W6 里程碑 2</span>
+    <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#8b5cf6;"></span>W7 里程碑 3</span>
+    <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#ef4444;"></span>W8 里程碑 4</span>
+    <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#10b981;"></span>W9 里程碑 5</span>
+  </div>
+
+  <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;min-height:0;">
+    <div class="chart-card">
+      <div class="chart-card-header"><div class="chart-card-title">对象 A</div><div class="chart-card-note">4 月日级</div></div>
+      <div class="chart-card-body"><div id="chart-a"></div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-header"><div class="chart-card-title">对象 B</div><div class="chart-card-note">4 月日级</div></div>
+      <div class="chart-card-body"><div id="chart-b"></div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-header"><div class="chart-card-title">对象 C</div><div class="chart-card-note">4 月日级</div></div>
+      <div class="chart-card-body"><div id="chart-c"></div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-header"><div class="chart-card-title">对象 D</div><div class="chart-card-note">4 月日级</div></div>
+      <div class="chart-card-body"><div id="chart-d"></div></div>
+    </div>
+  </div>
+</div>
+
+<!--
+  对应 slide-N.js 应调用 renderDailyDual()：
+    const D = window.__DATA_5__;
+    renderDailyDual('chart-a', D.labels, D.a.dur, D.a.vids, D.marks_phnp);
+    renderDailyDual('chart-b', D.labels, D.b.dur, D.b.vids, D.marks_phnp);
+    ...
+-->

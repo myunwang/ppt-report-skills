@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Noto+Serif+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&family=Bebas+Neue&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<style>
+{{STYLES}}
+</style>
+</head>
+<body data-theme="modern-light">
+
+<div class="stage">
+  <div class="canvas">
+    <div class="slides">
+{{SLIDES}}
+    </div>
+  </div>
+</div>
+
+<!-- NAV (固定屏幕底部，不随 canvas 缩放) -->
+<div class="nav">
+  <button onclick="go(-1)">← 上一页</button>
+  <div class="dots" id="dots"></div>
+  <div class="slide-counter" id="counter">1 / 1</div>
+  <button onclick="go(1)">下一页 →</button>
+</div>
+
+<!-- THEME SWITCHER (右上角) -->
+<div class="theme-switcher" id="themeSwitcher"></div>
+
+<script>
+{{DATA}}
+</script>
+<script>
+{{SCRIPTS}}
+</script>
+</body>
+</html>

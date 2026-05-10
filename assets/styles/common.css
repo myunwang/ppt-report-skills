@@ -1,0 +1,290 @@
+/* ══════════════════════════════════════════════════════════
+   COMMON STYLES — 设计稿 1600×900，整页 transform: scale 自适应
+   含 5 套主题预设：modern-light / dark-tech / warm-business / brand-blue / minimal-mono
+   修改任意一页内容时不需要动这个文件
+══════════════════════════════════════════════════════════ */
+
+/* ── 默认主题 = modern-light ── */
+:root,
+[data-theme="modern-light"] {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface2: #f1f4fa;
+  --border: rgba(15, 23, 42, 0.08);
+  --accent:  #2563eb;
+  --accent2: #0891b2;
+  --accent3: #059669;
+  --warn:    #d97706;
+  --danger:  #dc2626;
+  --text:    #0f172a;
+  --text2:   #475569;
+  --text3:   #94a3b8;
+  --font-sans: 'Noto Sans SC', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Bebas Neue', var(--font-mono);
+
+  --shadow-card:    0 1px 3px rgba(15,23,42,0.04), 0 1px 2px rgba(15,23,42,0.03);
+  --shadow-card-lg: 0 4px 12px rgba(15,23,42,0.06), 0 2px 4px rgba(15,23,42,0.04);
+  --grid-line: rgba(37,99,235,0.05);
+}
+
+[data-theme="dark-tech"] {
+  --bg: #0a0e1a;
+  --surface: #131826;
+  --surface2: #1c2233;
+  --border: rgba(255, 255, 255, 0.08);
+  --accent:  #3b82f6;
+  --accent2: #06b6d4;
+  --accent3: #10b981;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+  --text:    #e2e8f0;
+  --text2:   #94a3b8;
+  --text3:   #64748b;
+  --shadow-card: none;
+  --shadow-card-lg: none;
+  --grid-line: rgba(59,130,246,0.06);
+}
+
+[data-theme="warm-business"] {
+  --bg: #fdf8f3;
+  --surface: #ffffff;
+  --surface2: #f9f1e8;
+  --border: rgba(120, 53, 15, 0.10);
+  --accent:  #c2410c;
+  --accent2: #b45309;
+  --accent3: #15803d;
+  --warn:    #ca8a04;
+  --danger:  #b91c1c;
+  --text:    #1c1917;
+  --text2:   #57534e;
+  --text3:   #a8a29e;
+  --font-sans: 'Noto Serif SC', 'Noto Sans SC', sans-serif;
+  --grid-line: rgba(194,65,12,0.04);
+}
+
+[data-theme="brand-blue"] {
+  --bg: #f0f4f9;
+  --surface: #ffffff;
+  --surface2: #e6edf6;
+  --border: rgba(30, 58, 138, 0.12);
+  --accent:  #1e3a8a;
+  --accent2: #2563eb;
+  --accent3: #0891b2;
+  --warn:    #b45309;
+  --danger:  #b91c1c;
+  --text:    #0c1a3a;
+  --text2:   #334155;
+  --text3:   #64748b;
+  --grid-line: rgba(30,58,138,0.05);
+}
+
+[data-theme="minimal-mono"] {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface2: #f5f5f5;
+  --border: rgba(0, 0, 0, 0.10);
+  --accent:  #18181b;
+  --accent2: #404040;
+  --accent3: #16a34a;
+  --warn:    #ca8a04;
+  --danger:  #dc2626;
+  --text:    #18181b;
+  --text2:   #52525b;
+  --text3:   #a1a1aa;
+  --font-sans: 'Inter', 'Noto Sans SC', sans-serif;
+  --grid-line: rgba(0,0,0,0.04);
+}
+
+/* ── 设计稿尺寸 ── */
+:root {
+  --design-w: 1600px;
+  --design-h: 900px;
+  --fit: 1; /* JS 在 resize 时写入 */
+  --nav-reserve: 88px;
+
+  /* 字号系统（设计稿 1600×900 内的尺寸，会随窗口等比缩放） */
+  --fs-label:    13px;
+  --fs-title:    36px;
+  --fs-subtitle: 18px;
+  --fs-h2:       18px;
+  --fs-h3:       15px;
+  --fs-body:     13px;
+  --fs-caption:  12px;
+  --fs-mini:     11px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+/* ── STAGE: 占满浏览器窗口，底部预留 nav 区域 ── */
+.stage {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  bottom: var(--nav-reserve);
+  overflow: hidden;
+}
+
+/* ── CANVAS: 1600×900 设计稿，按 --fit 缩放后视觉居中于 stage ── */
+.canvas {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: var(--design-w);
+  height: var(--design-h);
+  transform: translate(-50%, -50%) scale(var(--fit));
+  transform-origin: center center;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* ── SLIDES CONTAINER ── */
+.slides { position: absolute; inset: 0; }
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  padding: 48px 64px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.slide.active { display: flex; opacity: 1; }
+
+/* ── GRID BACKGROUND ── */
+.slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+/* ── NAV ── */
+.nav {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 16px;
+  z-index: 100;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 10px 20px;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-card-lg);
+}
+.nav button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  padding: 6px 18px;
+  border-radius: 100px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.nav button:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.slide-counter {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text3);
+  min-width: 56px;
+  text-align: center;
+}
+.dots { display: flex; gap: 6px; }
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text3);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.dot.active { background: var(--accent); width: 18px; border-radius: 3px; }
+
+/* ── THEME SWITCHER (右上角) ── */
+.theme-switcher {
+  position: fixed; top: 16px; right: 16px;
+  z-index: 200;
+  display: flex; gap: 4px;
+  background: var(--surface);
+  padding: 4px;
+  border-radius: 100px;
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+.theme-switcher button {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 100px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text2);
+  transition: all 0.15s;
+}
+.theme-switcher button:hover { background: var(--surface2); }
+.theme-switcher button.active { background: var(--accent); color: #fff; }
+
+/* ── 顶部三件套 ── */
+.slide-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  color: var(--accent2);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.slide-label::before {
+  content: '';
+  width: 24px; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 2px;
+}
+
+.slide-title {
+  font-size: var(--fs-title);
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.18;
+  letter-spacing: -0.01em;
+  margin-bottom: 10px;
+}
+.slide-title span { color: var(--accent); }
+
+.slide-subtitle {
+  font-size: var(--fs-subtitle);
+  color: var(--text2);
+  font-weight: 500;
+  line-height: 1.55;
+  margin-bottom: 26px;
+  max-width: 1280px;
+}
+.slide-subtitle strong { color: var(--accent); font-weight: 700; }
+.slide-subtitle .pos  { color: var(--accent3); font-weight: 700; }
+.slide-subtitle .neg  { color: var(--danger);  font-weight: 700; }
+.slide-subtitle .warn { color: var(--warn);    font-weight: 700; }
+.slide-subtitle .sep {
+  display: inline-block; width: 1px; height: 14px;
+  background: var(--border); margin: 0 12px; vertical-align: middle;
+}

@@ -1,0 +1,201 @@
+/* ══════════════════════════════════════════════════════════
+   COMPONENTS — 通用组件库
+   全部用 var() 主题变量，确保切主题不崩
+══════════════════════════════════════════════════════════ */
+
+/* ── tags ── */
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: var(--fs-mini);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+.tag-p0      { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.tag-p1      { background: #fef3c7; color: #a16207; border: 1px solid #fde68a; }
+.tag-done    { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.tag-offline { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
+.tag-wip     { background: #cffafe; color: #0e7490; border: 1px solid #a5f3fc; }
+
+.divider { width: 100%; height: 1px; background: var(--border); margin: 24px 0; }
+
+/* ── card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: var(--shadow-card);
+}
+.card-accent-left   { border-left: 3px solid var(--accent); }
+.card-accent-green  { border-left: 3px solid var(--accent3); }
+.card-accent-warn   { border-left: 3px solid var(--warn); }
+.card-accent-danger { border-left: 3px solid var(--danger); }
+
+.kpi-card,
+.metric-up-card,
+.phase-box,
+.cc-card,
+.chart-card,
+.chart-container {
+  box-shadow: var(--shadow-card);
+}
+
+/* ── KPI ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; flex: 1; }
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.kpi-card.blue::before   { background: var(--accent); }
+.kpi-card.cyan::before   { background: var(--accent2); }
+.kpi-card.green::before  { background: var(--accent3); }
+.kpi-card.amber::before  { background: var(--warn); }
+.kpi-card.red::before    { background: var(--danger); }
+.kpi-card.purple::before { background: #8b5cf6; }
+.kpi-icon  { font-size: 20px; margin-bottom: 12px; }
+.kpi-num   { font-size: 36px; font-weight: 900; line-height: 1; margin-bottom: 6px; font-family: var(--font-mono); }
+.kpi-card.blue .kpi-num   { color: var(--accent); }
+.kpi-card.cyan .kpi-num   { color: var(--accent2); }
+.kpi-card.green .kpi-num  { color: var(--accent3); }
+.kpi-card.amber .kpi-num  { color: var(--warn); }
+.kpi-card.red .kpi-num    { color: var(--danger); }
+.kpi-card.purple .kpi-num { color: #a78bfa; }
+.kpi-label { font-size: var(--fs-body); color: var(--text2); font-weight: 500; margin-bottom: 4px; }
+.kpi-desc  { font-size: var(--fs-mini); color: var(--text3); }
+
+/* ── grid ── */
+.two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; min-height: 0; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; flex: 1; min-height: 0; }
+
+/* ── metric-row ── */
+.metric-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.metric-row:last-child { border-bottom: none; }
+.metric-name   { font-size: var(--fs-caption); color: var(--text2); }
+.metric-vals   { display: flex; gap: 16px; align-items: center; }
+.metric-before { font-family: var(--font-mono); font-size: var(--fs-caption); color: var(--text3); }
+.metric-after  { font-family: var(--font-mono); font-size: var(--fs-caption); color: var(--text); }
+.metric-delta  { font-family: var(--font-mono); font-size: var(--fs-mini); padding: 2px 6px; border-radius: 4px; font-weight: 600; min-width: 52px; text-align: center; }
+.delta-neg { background: #fef2f2; color: #b91c1c; }
+.delta-pos { background: #dcfce7; color: #15803d; }
+.big-metric         { text-align: center; padding: 20px 16px; }
+.big-metric-num     { font-size: 40px; font-weight: 900; font-family: var(--font-mono); color: var(--accent3); line-height: 1; margin-bottom: 6px; }
+.big-metric-label   { font-size: var(--fs-caption); color: var(--text2); }
+
+/* ── timeline (横向) ── */
+.timeline-bar { display: flex; align-items: center; gap: 0; margin-bottom: 28px; position: relative; }
+.tl-node { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.tl-dot  { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--accent2); position: relative; z-index: 1; }
+.tl-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--accent), var(--accent2)); margin: 0 -1px; margin-top: -16px; }
+.tl-date { font-family: var(--font-mono); font-size: 10px; color: var(--accent2); }
+.tl-label { font-size: var(--fs-mini); color: var(--text2); }
+
+/* ── metric-up-card 紧凑指标卡 ── */
+.metric-up-grid  { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+.metric-up-card  { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 12px; text-align: center; }
+.metric-up-num   { font-size: 26px; font-weight: 900; font-family: var(--font-mono); color: var(--accent3); line-height: 1; margin-bottom: 4px; }
+.metric-up-label { font-size: 10px; color: var(--text3); }
+.metric-up-sub   { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+/* ── phase 阶段时间线 ── */
+.phase-timeline { display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr; gap: 0; align-items: start; flex: 1; }
+.phase-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; height: 100%; }
+.phase-date { font-family: var(--font-mono); font-size: 10px; color: var(--accent2); letter-spacing: 0.1em; margin-bottom: 8px; }
+.phase-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+.phase-arrow { display: flex; align-items: center; justify-content: center; color: var(--text3); font-size: 18px; margin-top: 60px; }
+.phase-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+.phase-item-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); margin-top: 7px; flex-shrink: 0; }
+.phase-item-text { font-size: var(--fs-caption); color: var(--text2); line-height: 1.5; }
+
+.phase-layout { flex: 1; display: grid; grid-template-columns: minmax(300px, 0.95fr) 1.15fr; gap: 16px; min-height: 0; align-items: stretch; }
+.phase-timeline-v { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.phase-timeline-v .phase-box { padding: 14px 16px; height: auto; flex: 0 0 auto; }
+.phase-timeline-v .phase-title { font-size: 13px; margin-bottom: 8px; }
+.phase-timeline-v .phase-date { margin-bottom: 4px; }
+.phase-timeline-v .phase-item { margin-bottom: 4px; }
+.phase-timeline-v .phase-item-text { font-size: 11px; }
+.phase-arrow-v { flex: 1 1 0; min-height: 22px; display: flex; align-items: center; justify-content: center; color: var(--text3); font-size: 14px; line-height: 1; margin: 0; }
+.phase-charts { display: grid; grid-template-rows: 1fr 1fr; gap: 12px; min-height: 0; }
+
+/* ── chart-card 通用图表容器 ── */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.chart-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.chart-card-title { font-size: var(--fs-caption); color: var(--text2); font-weight: 700; }
+.chart-card-note  { font-size: 10px; color: var(--text3); font-family: var(--font-mono); }
+.chart-card-body  { flex: 1; min-height: 0; position: relative; }
+.chart-card-body > div[id^="chart-"] { width: 100%; height: 100%; }
+
+/* ── 国家对比小卡 ── */
+.country-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.cc-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+.cc-country { font-size: var(--fs-mini); font-weight: 700; color: var(--accent2); margin-bottom: 8px; }
+.cc-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.cc-k { font-size: var(--fs-mini); color: var(--text3); }
+.cc-v { font-family: var(--font-mono); font-size: var(--fs-mini); color: var(--text); }
+.cc-v.highlight { color: var(--warn); font-weight: 700; }
+
+/* ── tabs ── */
+.stab {
+  flex: 1; background: none; border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text3);
+  font-family: var(--font-sans);
+  font-size: var(--fs-mini);
+  padding: 8px 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.stab:hover { color: var(--text2); }
+.stab.active { color: var(--accent2); border-bottom-color: var(--accent2); font-weight: 600; }
+
+/* ── mini-bar 横向 Top-N 条形（自定义，不用 chart 库） ── */
+.mini-bar-row { display: flex; align-items: center; gap: 6px; flex: 1 1 0; min-height: 0; line-height: 1; }
+.mini-bar-label { font-size: 10px; color: var(--text3); width: 68px; flex-shrink: 0; text-align: right; }
+.mini-bar-track { flex: 1; height: 7px; background: var(--surface2); border-radius: 2px; position: relative; }
+.mini-bar-fill { position: absolute; top: 0; left: 0; height: 100%; border-radius: 2px; }
+.mini-bar-val { font-family: var(--font-mono); font-size: 10px; color: var(--text3); width: 58px; flex-shrink: 0; text-align: right; }
+
+/* ── insight-box 科普/原理说明框 ── */
+.insight-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.insight-title { font-size: var(--fs-caption); font-weight: 700; color: var(--text2); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.insight-title::before { content: ''; display: block; width: 3px; height: 12px; background: var(--accent); border-radius: 2px; }
+.insight-text { font-size: var(--fs-caption); color: var(--text3); line-height: 1.7; }
+.insight-text strong { color: var(--text2); }
+
+/* ── card-conclusion 卡片底部小结 ── */
+.card-conclusion {
+  flex-shrink: 0;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  font-size: var(--fs-body);
+  color: var(--text3);
+  line-height: 1.6;
+}
+.footer-conclusion {
+  flex-shrink: 0;
+  font-size: var(--fs-body);
+  color: var(--text3);
+  line-height: 1.6;
+  text-align: center;
+}

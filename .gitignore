@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# build 产物（如果用户在仓库内 build）
+*.html.bak
+_pdf_p*.png
+
+# 用户在仓库内试用时生成的项目产出
+my-report*/
+test-output/
