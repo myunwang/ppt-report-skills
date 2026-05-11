@@ -5,7 +5,14 @@
   - src/slides/slide-N.html   (HTML 片段)
   - src/scripts/slide-N.js    (该页图表初始化逻辑)
   - src/styles/slide-N.css    (该页特殊样式，可空)
-  - src/data/slide-N.json     (该页数据，可选；存在则注入为 window.__DATA_N__)
+  - src/data/slide-N.{xlsx,csv,json}  (该页数据，可选；存在则注入为 window.__DATA_N__)
+
+数据文件支持三种格式（优先级 .json > .xlsx > .csv）：
+  - .xlsx  推荐日常用 — 每个 sheet → JSON 顶层一个 key
+  - .csv   单表数据 — 整份 → JSON 顶层一个 array
+  - .json  原生格式 — 直接读取（机器生成 / 复杂结构时用）
+
+详见 xlsx2json.py 顶部的转换约定。
 
 然后运行 `python3 build.py` 即可。
 
@@ -15,6 +22,16 @@
 from pathlib import Path
 import json
 import re
+import sys
+
+# 同目录的 xlsx2json 提供 Excel / CSV 读取能力
+_HERE = Path(__file__).resolve().parent
+if str(_HERE) not in sys.path:
+    sys.path.insert(0, str(_HERE))
+try:
+    import xlsx2json
+except ImportError:
+    xlsx2json = None
 
 ROOT = Path(__file__).resolve().parent
 SRC = ROOT / 'src'
@@ -31,6 +48,42 @@ OUT = ROOT / OUT_NAME
 
 def read(p: Path) -> str:
     return p.read_text(encoding='utf-8') if p.exists() else ''
+
+
+def _load_slide_data(data_dir: Path, n: int):
+    """查找 slide-N.{json,xlsx,csv} 并返回 (obj, source_filename) 或 (None, None)。
+
+    优先级：.json > .xlsx > .csv
+    """
+    if not data_dir.exists():
+        return None, None
+    candidates = [
+        ('.json', data_dir / f'slide-{n}.json'),
+        ('.xlsx', data_dir / f'slide-{n}.xlsx'),
+        ('.csv',  data_dir / f'slide-{n}.csv'),
+    ]
+    for ext, path in candidates:
+        if not path.exists():
+            continue
+        try:
+            if ext == '.json':
+                obj = json.loads(path.read_text(encoding='utf-8'))
+            elif ext == '.xlsx':
+                if xlsx2json is None:
+                    print(f'⚠ {path.name} 需要 xlsx2json.py（同目录）+ openpyxl')
+                    continue
+                obj = xlsx2json.xlsx_to_dict(path)
+            elif ext == '.csv':
+                if xlsx2json is None:
+                    print(f'⚠ {path.name} 需要 xlsx2json.py（同目录）')
+                    continue
+                obj = xlsx2json.csv_to_list(path)
+            else:
+                continue
+            return obj, path.name
+        except Exception as e:
+            print(f'⚠ {path.name}: {e}')
+    return None, None
 
 
 def detect_slides() -> int:
@@ -67,17 +120,17 @@ def main() -> None:
             slide_parts.append(f'      <!-- ── SLIDE {i} ── -->\n{body}')
     slides_html = '\n\n'.join(slide_parts)
 
-    # ── 3. 拼装 DATA (JSON → window.__DATA_N__) ──
+    # ── 3. 拼装 DATA (xlsx/csv/json → window.__DATA_N__) ──
+    # 同一 slide 编号下，优先级：.json > .xlsx > .csv
+    data_dir = SRC / 'data'
     data_parts = []
     for i in range(1, n + 1):
-        data_path = SRC / 'data' / f'slide-{i}.json'
-        if data_path.exists():
-            try:
-                # 验证 JSON 合法
-                obj = json.loads(data_path.read_text(encoding='utf-8'))
-                data_parts.append(f'window.__DATA_{i}__ = {json.dumps(obj, ensure_ascii=False)};')
-            except json.JSONDecodeError as e:
-                print(f'⚠ slide-{i}.json invalid: {e}')
+        obj, src_name = _load_slide_data(data_dir, i)
+        if obj is None:
+            continue
+        data_parts.append(
+            f'window.__DATA_{i}__ = {json.dumps(obj, ensure_ascii=False)};  // <- {src_name}'
+        )
     data_block = '\n'.join(data_parts)
 
     # ── 4. 拼装 JS ──

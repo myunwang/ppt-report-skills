@@ -8,6 +8,7 @@ my-report/
 ├── 我的汇报.pdf               ← export_pdf.py 生成（可选）
 ├── build.py                   ← 合并脚本
 ├── export_pdf.py              ← PDF 导出脚本
+├── xlsx2json.py               ← Excel/CSV → JSON 转换器（被 build 自动调用，也可单跑）
 └── src/
     ├── shell.html             ← HTML 骨架，含 {{STYLES}} {{SLIDES}} {{SCRIPTS}} 占位
     ├── styles/
@@ -21,9 +22,10 @@ my-report/
     │   ├── common.js          ← 自适应 + 导航 + ECharts helper
     │   ├── slide-1.js         ← 必须导出 initSlide1() 函数
     │   └── slide-N.js
-    └── data/
-        ├── slide-1.json       ← 该页所需数据（可选）
-        └── slide-N.json
+    └── data/                  ← 三种格式自由选择，build.py 自动转 JSON 注入
+        ├── slide-1.xlsx       ← 推荐：日常用 Excel 改数据
+        ├── slide-2.csv        ← 单表数据
+        └── slide-3.json       ← 复杂嵌套结构 / 机器生成
 ```
 
 ## build.py 工作原理
@@ -40,34 +42,93 @@ my-report/
 - 最终是单 HTML（无外部依赖、可直接邮件/IM 分享）
 - 多人协作时按页分工不冲突
 
-## 数据分离机制（v2 — 新做法）
+## 数据分离机制
 
-旧做法（4 月汇报里的）：数据写在 `scripts/slide-N.js` 顶部的 `const XXX_DATA = {...}`。
-新做法：把 `XXX_DATA` 抽成 `data/slide-N.json`。两种衔接方式：
+**核心思路**：渲染代码（HTML/JS）和数据（xlsx/csv/json）完全解耦。下次更新数据，只改数据文件，重跑 `python3 build.py`，**渲染代码一行都不用动**。
 
-### 方式 A · build 时内联（推荐，单文件可分享）
+### 支持的数据格式
 
-`build.py` 在拼接 JS 前，先读取 `data/*.json`，在每个 slide-N.js 前注入：
+| 格式 | 适用场景 | 转换结果 |
+|---|---|---|
+| `.xlsx` | **日常推荐** — 数据本来就在 Excel 里 | 每个 sheet → JSON 顶层 key，每个 sheet 内容 → `[{col: val}, ...]` |
+| `.csv` | 单表数据 | 整份 → `[{col: val}, ...]` |
+| `.json` | 机器生成 / 复杂嵌套结构 | 直接读取 |
 
-```python
-data_path = SRC / 'data' / f'slide-{i}.json'
-if data_path.exists():
-    data_json = data_path.read_text(encoding='utf-8')
-    script_parts.append(f'window.__DATA_{i}__ = {data_json};')
-```
+**优先级**：`.json > .xlsx > .csv`（同一 slide 编号下只取一个）。
 
-`scripts/slide-N.js` 通过 `window.__DATA_N__` 读取。
+### xlsx / csv 约定
 
-### 方式 B · 运行时 fetch（适合数据频繁变动 + 服务器托管）
+1. **第 1 行 = 表头**，后续每行 = 数据
+2. **每行转一个对象**：`{表头列: 单元格值}`
+3. **类型自动推断**：纯数字单元格 → number，其他保留 string
+4. **过滤约定**：sheet 名 / 列名以 `_` 开头会被跳过（用于备注、辅助计算列）
+5. **空行自动跳过**
 
-```js
-async function initSlide5() {
-  const data = await fetch('./data/slide-5.json').then(r => r.json());
-  renderTrendChart('chart-ph', data.ph);
+举例：`src/data/slide-3.xlsx` 含两个 sheet —
+
+| sheet `kpis` | label | value | unit |
+|---|---|---|---|
+| | DAU | 12.4 | 万 |
+| | ARR | 48 | M USD |
+
+| sheet `trend` | week | na | eu |
+|---|---|---|---|
+| | W1 | 12.1 | 8.4 |
+| | W2 | 12.4 | 8.6 |
+
+转换后 `window.__DATA_3__` 为：
+
+```json
+{
+  "kpis":  [{"label": "DAU", "value": 12.4, "unit": "万"}, {"label": "ARR", "value": 48, "unit": "M USD"}],
+  "trend": [{"week": "W1", "na": 12.1, "eu": 8.4}, {"week": "W2", "na": 12.4, "eu": 8.6}]
 }
 ```
 
-注意：本地用 `file://` 打开时 `fetch()` 会被 CORS 拦截，所以**默认方式 A**。需要 fetch 时启动一个本地静态服务器（`python3 -m http.server`）。
+### build.py 的注入流程
+
+```
+src/data/slide-N.xlsx    ← 用户编辑
+        ↓ build.py 调 xlsx2json.xlsx_to_dict(path)
+{kpis: [...], trend: [...]}    ← Python dict
+        ↓ json.dumps + 包装为 window.__DATA_N__ = ...;
+最终 HTML 的 <script> 中：window.__DATA_N__ = {"kpis": [...], "trend": [...]};
+        ↓ initSlideN() 通过 window.__DATA_N__ 读取
+ECharts / DOM 渲染
+```
+
+`scripts/slide-N.js` 里只需：
+
+```js
+function initSlideN() {
+  const D = window.__DATA_N__;
+  // D.kpis = [...], D.trend = [...]
+  // 调用 renderXxx() 或 initChart() 即可
+}
+```
+
+### 独立调试
+
+```bash
+# 转单个文件（输出到 stdout）
+python3 xlsx2json.py src/data/slide-3.xlsx
+
+# 写入 JSON（这样以后 build 会优先用 JSON）
+python3 xlsx2json.py src/data/slide-3.xlsx > src/data/slide-3.json
+
+# 转整目录
+python3 xlsx2json.py src/data/
+```
+
+### 何时用哪种格式
+
+- **大部分场景用 xlsx**：业务数据本来就在 Excel 里，直接放进去就行
+- **简单一维数据用 csv**：从 BI / 数据库导出的 csv 文件
+- **嵌套结构 / 自动生成用 json**：比如 markLine 配置（嵌套对象）、API 拉出来的复杂结构 — 这种用 xlsx 表达不优雅，直接写 JSON 更顺手
+
+### 运行时 fetch（可选，不推荐）
+
+不通过 build.py 内联，而是浏览器运行时 `fetch('./data/slide-5.json')`，适合数据频繁变动 + 服务器托管。注意 `file://` 打开时 CORS 会拦截，所以默认走 build 内联。
 
 ## 自适应缩放（核心约束）
 

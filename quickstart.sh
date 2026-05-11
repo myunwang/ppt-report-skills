@@ -39,10 +39,11 @@ echo "🚀 初始化 report-deck 项目到：$TARGET"
 
 mkdir -p "$TARGET/src"
 
-# 拷贝 assets 内容到 src/，build.py 和 export_pdf.py 移到根
+# 拷贝 assets 内容到 src/，根级脚本（build / export / xlsx2json）移到项目根
 rsync -a --exclude='__pycache__' --exclude='.DS_Store' "$ASSETS_DIR/" "$TARGET/src/"
 mv "$TARGET/src/build.py" "$TARGET/build.py"
 mv "$TARGET/src/export_pdf.py" "$TARGET/export_pdf.py"
+mv "$TARGET/src/xlsx2json.py" "$TARGET/xlsx2json.py"
 
 # 创建 build.py 期望的目录
 mkdir -p "$TARGET/src/slides" "$TARGET/src/data"
@@ -88,15 +89,14 @@ python3 export_pdf.py   # 导出 PDF（需 playwright + img2pdf）
 # 1. 选模板
 cp src/slides-templates/two-country.html src/slides/slide-2.html
 
-# 2. 写数据
-cat > src/data/slide-2.json <<JSON
-{ "key": "value" }
-JSON
+# 2. 写数据（xlsx / csv / json 三选一，build 自动识别）
+#    xlsx：直接把 Excel 文件丢进 src/data/，多 sheet 自动展开
+cp ~/Downloads/我的数据.xlsx src/data/slide-2.xlsx
 
 # 3. 写图表初始化
 cat > src/scripts/slide-2.js <<'JS'
 function initSlide2() {
-  const D = window.__DATA_2__;
+  const D = window.__DATA_2__;   // build 自动从 xlsx/csv/json 读取
   // ...
 }
 JS
@@ -105,7 +105,13 @@ JS
 python3 build.py
 ```
 
-详见 `src/README.md`（来自 report-deck assets）。
+## 数据格式
+
+- **xlsx** — 每个 sheet → JSON 顶层一个 key（推荐 · 需 `pip install openpyxl`）
+- **csv**  — 整份 → JSON 数组（单表数据）
+- **json** — 直接读取（复杂嵌套结构）
+
+详见 `src/README.md`。
 EOF
 
 echo ""
