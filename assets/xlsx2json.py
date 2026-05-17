@@ -1,5 +1,5 @@
 """
-xlsx2json.py — 把 Excel/CSV 转成 report-deck 用的 JSON。
+xlsx2json.py — 把 Excel/CSV 转成 ppt-report-generator 用的 JSON。
 
 可作为独立调试工具单跑，也被 build.py 自动调用。
 

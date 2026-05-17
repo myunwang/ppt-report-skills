@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# quickstart.sh — 一键把 report-deck assets 初始化为新项目
+# quickstart.sh — 一键把 ppt-report-generator assets 初始化为新项目
 #
 # Usage:
 #   ./quickstart.sh <target-dir>
@@ -25,7 +25,7 @@ ASSETS_DIR="$SCRIPT_DIR/assets"
 
 if [ ! -d "$ASSETS_DIR" ]; then
   echo "❌ assets 目录不存在：$ASSETS_DIR"
-  echo "请确认你在 report-deck 仓库根目录运行此脚本。"
+  echo "请确认你在 ppt-report-generator 仓库根目录运行此脚本。"
   exit 1
 fi
 
@@ -35,7 +35,7 @@ if [ -e "$TARGET" ]; then
   exit 1
 fi
 
-echo "🚀 初始化 report-deck 项目到：$TARGET"
+echo "🚀 初始化 ppt-report-generator 项目到：$TARGET"
 
 mkdir -p "$TARGET/src"
 
@@ -73,7 +73,7 @@ EOF
 cat > "$TARGET/README.md" <<'EOF'
 # 我的汇报
 
-由 [report-deck](https://github.com/) 模板初始化。
+由 [ppt-report-generator](https://github.com/) 模板初始化。
 
 ## 常用命令
 

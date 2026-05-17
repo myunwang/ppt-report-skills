@@ -1,6 +1,6 @@
 # 贡献指南
 
-感谢你对 `report-deck` 感兴趣！本指南介绍如何提交问题与改动。
+感谢你对 `ppt-report-generator` 感兴趣！本指南介绍如何提交问题与改动。
 
 ## 提 Issue
 

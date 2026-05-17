@@ -1,4 +1,4 @@
-# report-deck assets
+# ppt-report-generator assets
 
 使用 `quickstart.sh` 一键初始化新项目（推荐），或手动拷贝：
 
