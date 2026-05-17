@@ -1,10 +1,204 @@
 # ppt-report-generator
 
-> 把数据汇报做成 16:9 网页版 PPT 的 Claude Code skill / 独立工程模板。
-> **每页一个文件 · 数据物理分离 · ECharts · 5 套主题 · 一键导出 PDF**
+**English** | [中文](#中文)
+
+> Turn data reports into 16:9 web-based slide decks — a Claude Code skill / standalone project template.
+> **One file per slide · physical data separation · ECharts · 5 themes · one-click PDF export**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code Skill](https://img.shields.io/badge/Claude%20Code-Skill-7c3aed.svg)](https://docs.claude.com/en/docs/claude-code/skills)
+
+## What is this
+
+A template that engineers the "data report → web slide deck" workflow. **Two ways to use it:**
+
+1. **As a Claude Code Skill** — drop this repo into `~/.claude/skills/ppt-report-generator/` and let Claude build reports following this spec automatically
+2. **As a standalone project template** — copy `assets/` to `src/` and run `python3 build.py` to bundle a single HTML
+
+## What problem it solves
+
+Slide tools (Keynote / Lark Docs / Google Slides) have a few chronic pain points for data reporting:
+
+- ❌ Change one number → redraw the whole chart → half an hour gone
+- ❌ Inconsistent font sizes across slides, misaligned cards, messy palette
+- ❌ Want a different style? Redo every slide one by one
+- ❌ Want Claude / GPT to fix one slide? You have to send the whole file — token explosion
+
+`ppt-report-generator` solves this with an engineering approach:
+
+- ✅ **One slide = 3 small files** (HTML + CSS + JS); changing a slide touches only 3 files of ≤ 200 lines each
+- ✅ **Data in Excel / CSV** (JSON also supported); build auto-converts to JSON and injects it — next update only edits Excel, rendering code stays untouched
+- ✅ **5 preset themes**, switch with one click in the top-right corner — Business Navy / Tech Dark / Warm Business / Light Minimal / Minimal Mono
+- ✅ **ECharts charts + data-shape decision table**, tells you which chart fits which data (refuses pie charts with 5+ slices)
+- ✅ **8 font-size levels / 4 font weights / the "Golden 11" core principles** — strict card-boundary alignment, no more "looks messy"
+- ✅ **One-click PDF export** (playwright + img2pdf, 13.33×7.5 inch 16:9 standard)
+
+## What the repo provides
+
+- **5 page templates** (`assets/slides-templates/`):
+  - `kpi-overview` — multi-section × multi-card overview
+  - `two-country` — two-subject side-by-side comparison (KPI + metric table)
+  - `three-phase` — three-phase timeline + multiple charts
+  - `multi-trend` — multi-subject trend comparison
+  - `supply-bars` — categorical bars + trend lines
+- **5 preset themes**: modern-light / dark-tech / warm-business / brand-blue / minimal-mono (one-click switch top-right, persisted via localStorage)
+- **6 reference docs** (`references/`, ~1300 lines): architecture · design system · layout principles · chart selection · components · themes
+- **Build scripts**: `build.py` (bundle HTML) + `export_pdf.py` (export PDF) + `quickstart.sh` (one-click init for a new project)
+
+## 5-minute quickstart (standalone project mode)
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/<your-username>/ppt-report-generator.git
+cd ppt-report-generator
+
+# 2. One-click init a new project
+./quickstart.sh ../my-report
+
+# 3. Enter the project and start editing
+cd ../my-report
+# Edit src/slides/slide-1.html / src/data/slide-1.json ...
+python3 build.py
+open *.html       # Open in browser, ← / → to navigate
+
+# 4. (Optional) Export PDF
+pip install playwright img2pdf
+playwright install chromium
+python3 export_pdf.py
+```
+
+## Using it as a Claude Code Skill
+
+```bash
+# macOS / Linux
+mkdir -p ~/.claude/skills
+git clone https://github.com/<your-username>/ppt-report-generator.git ~/.claude/skills/ppt-report-generator
+```
+
+Then in Claude Code just say **"make a monthly report"** / **"turn this data into a slide deck"**, and Claude will follow this skill's workflow automatically: pick a page template → organize data in `src/data/slide-N.xlsx` → lay out using the 8 font-size levels + the "Golden 11" principles → call the matching ECharts template function → output via `build.py`.
+
+See [`SKILL.md`](SKILL.md) for details.
+
+## Data format: Excel / CSV / JSON all work
+
+Business data already lives in Excel — **don't retype it into JSON**:
+
+```
+src/data/
+├── slide-1.xlsx    ← recommended — multiple sheets auto-convert to multiple JSON keys
+├── slide-2.csv     ← single-table data
+└── slide-3.json    ← complex nested structure / machine-generated
+```
+
+**xlsx conversion rule**: each sheet → one top-level JSON key, each row → one object (`{header: value}`). Sheets/columns starting with `_` are skipped.
+
+Example: `slide-3.xlsx` contains sheet `kpis` (columns label/value/unit) and `trend` (columns week/na/eu); after build it's injected as:
+
+```js
+window.__DATA_3__ = {
+  kpis:  [{label: 'DAU', value: 12.4, unit: '万'}, {label: 'ARR', value: 48, unit: 'M USD'}],
+  trend: [{week: 'W1', na: 12.1, eu: 8.4}, {week: 'W2', na: 12.4, eu: 8.6}]
+}
+```
+
+**xlsx dependency**: `pip install openpyxl` (csv / json use the standard library, no dependency). See [`references/architecture.md`](references/architecture.md).
+
+## Repo structure
+
+```
+ppt-report-generator/
+├── SKILL.md                    # Skill entry (Claude Code loads this)
+├── README.md                   # The file you're reading
+├── LICENSE                     # MIT
+├── quickstart.sh               # One-click init for a new project
+├── references/                 # Design philosophy & rules (6 docs, ~1300 lines)
+│   ├── architecture.md         # Split architecture + build.py internals + adaptive scaling
+│   ├── design-system.md        # 8 font-size levels / weights / colors / spacing hard rules
+│   ├── layout-principles.md    # 14 classic slide layout rules (incl. card-boundary alignment)
+│   ├── chart-mapping.md        # Data shape ↔ chart selection decision table + ECharts config templates
+│   ├── components.md           # Common component library (KPI / Phase / Mini-bar etc.)
+│   └── themes.md               # 5 preset themes + customization
+└── assets/                     # Ready-to-copy production files
+    ├── shell.html              # HTML skeleton (placeholders)
+    ├── build.py                # Bundle script (auto-detects N slides + xlsx/csv/json data)
+    ├── export_pdf.py           # PDF export
+    ├── xlsx2json.py            # Excel/CSV → JSON converter (called by build, also runs standalone)
+    ├── styles/
+    │   ├── common.css          # 5 theme variables + adaptive scaling
+    │   └── components.css      # Common components
+    ├── scripts/
+    │   ├── common.js           # Adaptive + navigation + 4 ECharts template functions
+    │   └── theme-switcher.js   # Theme switching
+    └── slides-templates/       # 5 page templates (copy → rename slide-N.html)
+        ├── kpi-overview.html       # Multi-section × multi-card overview
+        ├── two-country.html        # Two-subject side-by-side comparison
+        ├── three-phase.html        # Three-phase timeline + multiple charts
+        ├── multi-trend.html        # Multi-subject trend comparison
+        └── supply-bars.html        # Categorical bars + trend lines
+```
+
+> The data directory `src/data/` is created per-project by `quickstart.sh` at init time; no sample data is preset.
+
+## Core philosophy (the "Golden 11")
+
+1. Don't hardcode data in rendering code → put it in `data/slide-N.json`
+2. Don't let a single slide's HTML exceed 200 lines
+3. Use only the 8 font-size levels `var(--fs-*)`; don't add new sizes ad hoc
+4. No pie charts for 5+ items (use 100% stacked bars)
+5. Don't hardcode colors → use `var(--accent*)` theme variables
+6. Every slide must have the label / title / subtitle trio; subtitle contains the key number
+7. The design canvas is fixed at 1600×900; don't use vw/vh
+8. Always edit `src/`, never the build output
+9. Each slide answers one question and has one visual anchor
+10. The whole deck needs rhythm (alternating high/low density)
+11. **Card boundaries must be strictly aligned**: grid `1fr 1fr` + `flex:1 1 0; min-height:0` + flexible spacer to absorb differences; never hardcode height
+
+See [`references/`](references/) for details.
+
+## Use cases
+
+- ✅ Monthly / quarterly business reports
+- ✅ Internal / external decks for data teams
+- ✅ Project proposals, project retrospectives
+- ✅ Scenarios with many "comparison experiments / multi-subject trends / KPI overview" charts
+- ⚠️ Less suitable for: text-heavy decks (see the docx skill), talks needing complex animation (see PowerPoint)
+
+## Compatibility
+
+- Browsers: Chrome / Safari / Edge / Firefox (any modern version)
+- Python: 3.8+ (only build.py needs it, no external deps; export_pdf.py needs playwright + img2pdf)
+- ECharts: 5.5.x (loaded via CDN)
+- Claude Code: required only when used as a skill
+
+## License
+
+[MIT](LICENSE) — use, modify, and distribute freely.
+
+## Acknowledgements
+
+Every rule grew out of a pitfall hit while making real reports.
+
+## Feedback & contributing
+
+Issues / PRs welcome:
+
+- Submit new page templates (with screenshots)
+- Add new theme presets
+- Fix a layout rule
+- Translate the docs
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
+<a name="中文"></a>
+
+# ppt-report-generator（中文）
+
+[English](#ppt-report-generator) | **中文**
+
+> 把数据汇报做成 16:9 网页版 PPT 的 Claude Code skill / 独立工程模板。
+> **每页一个文件 · 数据物理分离 · ECharts · 5 套主题 · 一键导出 PDF**
 
 ## 这是什么
 
@@ -28,7 +222,7 @@ PPT 工具（Keynote / 飞书文档 / Google Slides）做数据汇报有几个�
 - ✅ **数据用 Excel / CSV**（也支持 JSON），build 自动转 JSON 注入 — 下次更新只改 Excel，渲染代码完全不动
 - ✅ **5 套预设主题**，右上角一键切换 — 商务深蓝 / 科技深色 / 暖色商业 / 浅色简约 / 极简单色
 - ✅ **ECharts 图表 + 数据形态决策表**，告诉你什么数据用什么图（拒绝 5 项以上饼图）
-- ✅ **8 级字号 / 4 级字重 / 11 条黄金布局规则** — 卡片边界严格对齐、不再"看着乱"
+- ✅ **8 级字号 / 4 级字重 / "黄金 11 条"核心理念** — 卡片边界严格对齐、不再"看着乱"
 - ✅ **一键导 PDF**（playwright + img2pdf，13.33×7.5 inch 16:9 标准）
 
 ## 仓库提供什么
@@ -73,7 +267,7 @@ mkdir -p ~/.claude/skills
 git clone https://github.com/<your-username>/ppt-report-generator.git ~/.claude/skills/ppt-report-generator
 ```
 
-之后在 Claude Code 里直接说**"做一份月度汇报"** / **"把这个数据做成 PPT"**，Claude 会自动按本 skill 的规范工作流走：选页面模板 → 在 `src/data/slide-N.xlsx` 整理数据 → 按 8 级字号 + 11 条布局规则排版 → 调用对应 ECharts 范本函数 → `build.py` 输出。
+之后在 Claude Code 里直接说**"做一份月度汇报"** / **"把这个数据做成 PPT"**，Claude 会自动按本 skill 的规范工作流走：选页面模板 → 在 `src/data/slide-N.xlsx` 整理数据 → 按 8 级字号 + "黄金 11 条"理念排版 → 调用对应 ECharts 范本函数 → `build.py` 输出。
 
 详见 [`SKILL.md`](SKILL.md)。
 
