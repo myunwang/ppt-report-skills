@@ -77,6 +77,8 @@ git clone https://github.com/<your-username>/ppt-report-generator.git ~/.claude/
 
 Then in Claude Code just say **"make a monthly report"** / **"turn this data into a slide deck"**, and Claude will follow this skill's workflow automatically: pick a page template → organize data in `src/data/slide-N.xlsx` → lay out using the 8 font-size levels + the "Golden 11" principles → call the matching ECharts template function → output via `build.py`.
 
+> **Language**: the skill spec and reference docs ship in two languages. The repo root (`SKILL.md`, `references/`) is Chinese; a fully English version lives in [`i18n/en/`](i18n/en/) (`i18n/en/SKILL.md` + `i18n/en/references/`, with an English trigger description). For English use, clone with that path as the skill root, e.g. point Claude Code at `i18n/en/SKILL.md`.
+
 See [`SKILL.md`](SKILL.md) for details.
 
 ## Data format: Excel / CSV / JSON all work
@@ -268,6 +270,8 @@ git clone https://github.com/<your-username>/ppt-report-generator.git ~/.claude/
 ```
 
 之后在 Claude Code 里直接说**"做一份月度汇报"** / **"把这个数据做成 PPT"**，Claude 会自动按本 skill 的规范工作流走：选页面模板 → 在 `src/data/slide-N.xlsx` 整理数据 → 按 8 级字号 + "黄金 11 条"理念排版 → 调用对应 ECharts 范本函数 → `build.py` 输出。
+
+> **语言版本**：skill 规范和参考文档提供中英两份。仓库根目录（`SKILL.md`、`references/`）为中文；完整英文版在 [`i18n/en/`](i18n/en/)（`i18n/en/SKILL.md` + `i18n/en/references/`，含英文触发 description）。英文用户把该路径作为 skill 根目录使用，即让 Claude Code 加载 `i18n/en/SKILL.md`。
 
 详见 [`SKILL.md`](SKILL.md)。
 
