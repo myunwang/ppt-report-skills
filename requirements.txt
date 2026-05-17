@@ -1,0 +1,14 @@
+# ppt-report-generator — Python 依赖
+#
+# 核心构建（build.py）零第三方依赖，只用 Python 标准库，无需 pip install 任何东西。
+# 下面是「按需」依赖，根据你用到的功能选择安装：
+#
+#   - 用 Excel(.xlsx) 作为数据源 → 需要 openpyxl（见下）
+#   - 用 CSV / JSON 作为数据源   → 无需任何依赖
+#   - 导出 PDF                   → 见 requirements-pdf.txt
+#
+# 前端图表 ECharts 5.5.1 通过 CDN 自动加载（cdn.jsdelivr.net），
+# 不是 pip 包、无需安装，但渲染含图表的页面时需要联网。详见 DEPENDENCIES.md。
+
+# Excel(.xlsx) 数据源支持（xlsx2json.py 懒加载；只用 csv/json 可不装）
+openpyxl>=3.1

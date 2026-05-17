@@ -1,0 +1,12 @@
+# ppt-report-generator — PDF 导出额外依赖（export_pdf.py）
+#
+# 仅当你需要把网页 deck 导出成 PDF 时才安装。安装两步：
+#
+#   pip install -r requirements-pdf.txt
+#   playwright install chromium      # ← 必须！下载 Chromium 浏览器二进制（约 150MB）
+#
+# 只装 pip 包是不够的：playwright 还需要浏览器二进制，
+# 缺少时 export_pdf.py 会报 "Executable doesn't exist"。详见 DEPENDENCIES.md。
+
+playwright>=1.40
+img2pdf>=0.5
