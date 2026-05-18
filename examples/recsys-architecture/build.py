@@ -37,8 +37,8 @@ ROOT = Path(__file__).resolve().parent
 SRC = ROOT / 'src'
 
 # ── CONFIG ────────────────────────────────────────────────
-TITLE = '我的工作汇报'
-OUT_NAME = '我的工作汇报.html'
+TITLE = '推荐系统分层架构'
+OUT_NAME = 'recsys-architecture.html'
 # 自动检测 slides 数量；也可手动指定
 NUM_SLIDES = None  # None = auto detect
 # 构建产物输出目录（相对项目根）。源文件始终在 src/，产物单独归到此处，

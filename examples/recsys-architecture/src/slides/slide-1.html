@@ -1,0 +1,124 @@
+  <div class="slide active" id="s1">
+
+    <div class="slide-label">系统架构</div>
+    <div class="slide-title">推荐系统<span>分层架构</span></div>
+    <div class="slide-subtitle">
+      召回 → 排序 → 重排 三层漏斗 · 从 <strong>百万级</strong> 候选逐层收敛到 <strong>十级</strong> 曝光 · 离线特征平台 + 在线低延迟服务双轮驱动
+    </div>
+
+    <div class="diagram-landscape">
+
+      <!-- ═══ TIER 1 召回层（4 格，合计 span = 3+3+3+3 = 12）═══ -->
+      <div class="lm-row tier-1">
+        <div class="lm-tag"><span class="lt-arrow">▶</span><span class="lt-name">召回<br>Recall</span></div>
+        <div class="lm-cols">
+          <div class="lm-col" style="--span:3;">
+            <div class="lc-h">协同过滤召回</div>
+            <div class="lc-body">
+              <span class="lm-item">ItemCF / UserCF</span>
+              <span class="lm-item">Swing / 矩阵分解</span>
+              <span class="lm-item">关联规则</span>
+            </div>
+          </div>
+          <div class="lm-col" style="--span:3;">
+            <div class="lc-h">向量召回</div>
+            <div class="lc-body">
+              <span class="lm-item">双塔 DSSM</span>
+              <span class="lm-item">YouTube DNN</span>
+              <span class="lm-item">ANN / Faiss</span>
+            </div>
+          </div>
+          <div class="lm-col" style="--span:3;">
+            <div class="lc-h">图 / 序列召回</div>
+            <div class="lc-body">
+              <span class="lm-item">GraphSAGE</span>
+              <span class="lm-item">DeepWalk</span>
+              <span class="lm-item">SIM 兴趣序列</span>
+            </div>
+          </div>
+          <div class="lm-col" style="--span:3;">
+            <div class="lc-h">规则 / 兜底召回</div>
+            <div class="lc-body">
+              <span class="lm-item">热门 / 高质量</span>
+              <span class="lm-item">地域 / 新品</span>
+              <span class="lm-item">兴趣标签</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TIER 2 排序层（3 格，合计 span = 4+4+4 = 12）═══ -->
+      <div class="lm-row tier-2">
+        <div class="lm-tag"><span class="lt-arrow">▶</span><span class="lt-name">排序<br>Ranking</span></div>
+        <div class="lm-cols">
+          <div class="lm-col" style="--span:4;">
+            <div class="lc-h">粗排 Pre-Rank</div>
+            <div class="lc-body">
+              <span class="lm-item">轻量双塔</span>
+              <span class="lm-item">COLD 蒸馏</span>
+              <span class="lm-item">万级 → 千级</span>
+            </div>
+          </div>
+          <div class="lm-col" style="--span:4;">
+            <div class="lc-h">精排 Fine-Rank</div>
+            <div class="lc-body">
+              <span class="lm-item">DeepFM / DIN</span>
+              <span class="lm-item">DIEN / DCN</span>
+              <span class="lm-item">多目标 MMoE</span>
+            </div>
+          </div>
+          <div class="lm-col" style="--span:4;">
+            <div class="lc-h">重排 Re-Rank</div>
+            <div class="lc-body">
+              <span class="lm-item">多样性 MMR / DPP</span>
+              <span class="lm-item">打散 / 频控</span>
+              <span class="lm-item">业务规则 + 强插</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TIER 3 基础设施（2 格，合计 span = 6+6 = 12）═══ -->
+      <div class="lm-row tier-3">
+        <div class="lm-tag"><span class="lt-arrow">▶</span><span class="lt-name">基础<br>设施</span></div>
+        <div class="lm-cols">
+          <div class="lm-col nest" style="--span:6;">
+            <div class="lc-h">特征 / 样本平台（离线）</div>
+            <div class="lc-sub four">
+              <div class="ls-cell"><div class="ls-h">特征工程</div><div class="ls-body">
+                <span class="lm-item sm">特征仓库</span>
+                <span class="lm-item sm">实时特征</span></div></div>
+              <div class="ls-cell"><div class="ls-h">样本</div><div class="ls-body">
+                <span class="lm-item sm">曝光点击拼接</span>
+                <span class="lm-item sm">负采样</span></div></div>
+              <div class="ls-cell"><div class="ls-h">训练</div><div class="ls-body">
+                <span class="lm-item sm">离线训练</span>
+                <span class="lm-item sm">增量更新</span></div></div>
+              <div class="ls-cell"><div class="ls-h">数据流</div><div class="ls-body">
+                <span class="lm-item sm">Flink / Kafka</span>
+                <span class="lm-item sm">数据湖</span></div></div>
+            </div>
+          </div>
+          <div class="lm-col nest" style="--span:6;">
+            <div class="lc-h">在线服务 / 工程（低延迟）</div>
+            <div class="lc-sub four">
+              <div class="ls-cell"><div class="ls-h">推理服务</div><div class="ls-body">
+                <span class="lm-item sm">TF Serving</span>
+                <span class="lm-item sm">模型热更新</span></div></div>
+              <div class="ls-cell"><div class="ls-h">在线存储</div><div class="ls-body">
+                <span class="lm-item sm">Redis / KV</span>
+                <span class="lm-item sm">向量库</span></div></div>
+              <div class="ls-cell"><div class="ls-h">AB 实验</div><div class="ls-body">
+                <span class="lm-item sm">分流框架</span>
+                <span class="lm-item sm">指标平台</span></div></div>
+              <div class="ls-cell"><div class="ls-h">监控</div><div class="ls-body">
+                <span class="lm-item sm">链路监控</span>
+                <span class="lm-item sm">效果回归</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>

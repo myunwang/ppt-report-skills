@@ -8,7 +8,7 @@
 #   ./quickstart.sh ../my-monthly-report
 #   cd ../my-monthly-report
 #   python3 build.py
-#   open *.html
+#   open dist/*.html
 
 set -e
 
@@ -78,9 +78,9 @@ cat > "$TARGET/README.md" <<'EOF'
 ## 常用命令
 
 ```bash
-python3 build.py        # 合成 HTML（默认写到当前目录）
-open *.html             # 浏览器打开
-python3 export_pdf.py   # 导出 PDF（需 playwright + img2pdf）
+python3 build.py        # 合成 HTML → 输出到 dist/
+open dist/*.html        # 浏览器打开
+python3 export_pdf.py   # 导出 PDF → dist/（需 playwright + img2pdf）
 ```
 
 ## 添加一页
@@ -120,5 +120,5 @@ echo ""
 echo "下一步："
 echo "  cd $TARGET"
 echo "  python3 build.py"
-echo "  open *.html"
+echo "  open dist/*.html"
 echo ""

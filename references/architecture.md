@@ -4,8 +4,9 @@
 
 ```
 my-report/
-├── 我的汇报.html              ← 最终产物（build.py 生成）
-├── 我的汇报.pdf               ← export_pdf.py 生成（可选）
+├── dist/                      ← 构建产物目录（build.py 自动创建）
+│   ├── 我的汇报.html          ← 最终产物（build.py 生成）
+│   └── 我的汇报.pdf           ← export_pdf.py 生成（可选）
 ├── build.py                   ← 合并脚本
 ├── export_pdf.py              ← PDF 导出脚本
 ├── xlsx2json.py               ← Excel/CSV → JSON 转换器（被 build 自动调用，也可单跑）

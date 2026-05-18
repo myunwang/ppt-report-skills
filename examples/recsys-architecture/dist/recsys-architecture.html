@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>推荐系统分层架构</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Noto+Serif+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&family=Bebas+Neue&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<style>
+/* ══════════════════════════════════════════════════════════
+   COMMON STYLES — 设计稿 1600×900，整页 transform: scale 自适应
+   含 5 套主题预设：modern-light / dark-tech / warm-business / brand-blue / minimal-mono
+   修改任意一页内容时不需要动这个文件
+══════════════════════════════════════════════════════════ */
+
+/* ── 默认主题 = modern-light ── */
+:root,
+[data-theme="modern-light"] {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface2: #f1f4fa;
+  --border: rgba(15, 23, 42, 0.08);
+  --accent:  #2563eb;
+  --accent2: #0891b2;
+  --accent3: #059669;
+  --warn:    #d97706;
+  --danger:  #dc2626;
+  --text:    #0f172a;
+  --text2:   #475569;
+  --text3:   #94a3b8;
+  --font-sans: 'Noto Sans SC', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Bebas Neue', var(--font-mono);
+
+  --shadow-card:    0 1px 3px rgba(15,23,42,0.04), 0 1px 2px rgba(15,23,42,0.03);
+  --shadow-card-lg: 0 4px 12px rgba(15,23,42,0.06), 0 2px 4px rgba(15,23,42,0.04);
+  --grid-line: rgba(37,99,235,0.05);
+}
+
+[data-theme="dark-tech"] {
+  --bg: #0a0e1a;
+  --surface: #131826;
+  --surface2: #1c2233;
+  --border: rgba(255, 255, 255, 0.08);
+  --accent:  #3b82f6;
+  --accent2: #06b6d4;
+  --accent3: #10b981;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+  --text:    #e2e8f0;
+  --text2:   #94a3b8;
+  --text3:   #64748b;
+  --shadow-card: none;
+  --shadow-card-lg: none;
+  --grid-line: rgba(59,130,246,0.06);
+}
+
+[data-theme="warm-business"] {
+  --bg: #fdf8f3;
+  --surface: #ffffff;
+  --surface2: #f9f1e8;
+  --border: rgba(120, 53, 15, 0.10);
+  --accent:  #c2410c;
+  --accent2: #b45309;
+  --accent3: #15803d;
+  --warn:    #ca8a04;
+  --danger:  #b91c1c;
+  --text:    #1c1917;
+  --text2:   #57534e;
+  --text3:   #a8a29e;
+  --font-sans: 'Noto Serif SC', 'Noto Sans SC', sans-serif;
+  --grid-line: rgba(194,65,12,0.04);
+}
+
+[data-theme="brand-blue"] {
+  --bg: #f0f4f9;
+  --surface: #ffffff;
+  --surface2: #e6edf6;
+  --border: rgba(30, 58, 138, 0.12);
+  --accent:  #1e3a8a;
+  --accent2: #2563eb;
+  --accent3: #0891b2;
+  --warn:    #b45309;
+  --danger:  #b91c1c;
+  --text:    #0c1a3a;
+  --text2:   #334155;
+  --text3:   #64748b;
+  --grid-line: rgba(30,58,138,0.05);
+}
+
+[data-theme="minimal-mono"] {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface2: #f5f5f5;
+  --border: rgba(0, 0, 0, 0.10);
+  --accent:  #18181b;
+  --accent2: #404040;
+  --accent3: #16a34a;
+  --warn:    #ca8a04;
+  --danger:  #dc2626;
+  --text:    #18181b;
+  --text2:   #52525b;
+  --text3:   #a1a1aa;
+  --font-sans: 'Inter', 'Noto Sans SC', sans-serif;
+  --grid-line: rgba(0,0,0,0.04);
+}
+
+/* ── 设计稿尺寸 ── */
+:root {
+  --design-w: 1600px;
+  --design-h: 900px;
+  --fit: 1; /* JS 在 resize 时写入 */
+  --nav-reserve: 88px;
+
+  /* 字号系统（设计稿 1600×900 内的尺寸，会随窗口等比缩放） */
+  --fs-label:    13px;
+  --fs-title:    36px;
+  --fs-subtitle: 18px;
+  --fs-h2:       18px;
+  --fs-h3:       15px;
+  --fs-body:     13px;
+  --fs-caption:  12px;
+  --fs-mini:     11px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+/* ── STAGE: 占满浏览器窗口，底部预留 nav 区域 ── */
+.stage {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  bottom: var(--nav-reserve);
+  overflow: hidden;
+}
+
+/* ── CANVAS: 1600×900 设计稿，按 --fit 缩放后视觉居中于 stage ── */
+.canvas {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: var(--design-w);
+  height: var(--design-h);
+  transform: translate(-50%, -50%) scale(var(--fit));
+  transform-origin: center center;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* ── SLIDES CONTAINER ── */
+.slides { position: absolute; inset: 0; }
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  padding: 48px 64px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.slide.active { display: flex; opacity: 1; }
+
+/* ── GRID BACKGROUND ── */
+.slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+/* ── NAV ── */
+.nav {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 16px;
+  z-index: 100;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 10px 20px;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-card-lg);
+}
+.nav button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  padding: 6px 18px;
+  border-radius: 100px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.nav button:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.slide-counter {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text3);
+  min-width: 56px;
+  text-align: center;
+}
+.dots { display: flex; gap: 6px; }
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text3);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.dot.active { background: var(--accent); width: 18px; border-radius: 3px; }
+
+/* ── THEME SWITCHER (右上角) ── */
+.theme-switcher {
+  position: fixed; top: 16px; right: 16px;
+  z-index: 200;
+  display: flex; gap: 4px;
+  background: var(--surface);
+  padding: 4px;
+  border-radius: 100px;
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+.theme-switcher button {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 100px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text2);
+  transition: all 0.15s;
+}
+.theme-switcher button:hover { background: var(--surface2); }
+.theme-switcher button.active { background: var(--accent); color: #fff; }
+
+/* ── 顶部三件套 ── */
+.slide-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  color: var(--accent2);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.slide-label::before {
+  content: '';
+  width: 24px; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 2px;
+}
+
+.slide-title {
+  font-size: var(--fs-title);
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.18;
+  letter-spacing: -0.01em;
+  margin-bottom: 10px;
+}
+.slide-title span { color: var(--accent); }
+
+.slide-subtitle {
+  font-size: var(--fs-subtitle);
+  color: var(--text2);
+  font-weight: 500;
+  line-height: 1.55;
+  margin-bottom: 26px;
+  max-width: 1280px;
+}
+.slide-subtitle strong { color: var(--accent); font-weight: 700; }
+.slide-subtitle .pos  { color: var(--accent3); font-weight: 700; }
+.slide-subtitle .neg  { color: var(--danger);  font-weight: 700; }
+.slide-subtitle .warn { color: var(--warn);    font-weight: 700; }
+.slide-subtitle .sep {
+  display: inline-block; width: 1px; height: 14px;
+  background: var(--border); margin: 0 12px; vertical-align: middle;
+}
+/* ══════════════════════════════════════════════════════════
+   COMPONENTS — 通用组件库
+   全部用 var() 主题变量，确保切主题不崩
+══════════════════════════════════════════════════════════ */
+
+/* ── tags ── */
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: var(--fs-mini);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+.tag-p0      { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.tag-p1      { background: #fef3c7; color: #a16207; border: 1px solid #fde68a; }
+.tag-done    { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.tag-offline { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
+.tag-wip     { background: #cffafe; color: #0e7490; border: 1px solid #a5f3fc; }
+
+.divider { width: 100%; height: 1px; background: var(--border); margin: 24px 0; }
+
+/* ── card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: var(--shadow-card);
+}
+.card-accent-left   { border-left: 3px solid var(--accent); }
+.card-accent-green  { border-left: 3px solid var(--accent3); }
+.card-accent-warn   { border-left: 3px solid var(--warn); }
+.card-accent-danger { border-left: 3px solid var(--danger); }
+
+.kpi-card,
+.metric-up-card,
+.phase-box,
+.cc-card,
+.chart-card,
+.chart-container {
+  box-shadow: var(--shadow-card);
+}
+
+/* ── KPI ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; flex: 1; }
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.kpi-card.blue::before   { background: var(--accent); }
+.kpi-card.cyan::before   { background: var(--accent2); }
+.kpi-card.green::before  { background: var(--accent3); }
+.kpi-card.amber::before  { background: var(--warn); }
+.kpi-card.red::before    { background: var(--danger); }
+.kpi-card.purple::before { background: #8b5cf6; }
+.kpi-icon  { font-size: 20px; margin-bottom: 12px; }
+.kpi-num   { font-size: 36px; font-weight: 900; line-height: 1; margin-bottom: 6px; font-family: var(--font-mono); }
+.kpi-card.blue .kpi-num   { color: var(--accent); }
+.kpi-card.cyan .kpi-num   { color: var(--accent2); }
+.kpi-card.green .kpi-num  { color: var(--accent3); }
+.kpi-card.amber .kpi-num  { color: var(--warn); }
+.kpi-card.red .kpi-num    { color: var(--danger); }
+.kpi-card.purple .kpi-num { color: #a78bfa; }
+.kpi-label { font-size: var(--fs-body); color: var(--text2); font-weight: 500; margin-bottom: 4px; }
+.kpi-desc  { font-size: var(--fs-mini); color: var(--text3); }
+
+/* ── grid ── */
+.two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; min-height: 0; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; flex: 1; min-height: 0; }
+
+/* ── metric-row ── */
+.metric-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.metric-row:last-child { border-bottom: none; }
+.metric-name   { font-size: var(--fs-caption); color: var(--text2); }
+.metric-vals   { display: flex; gap: 16px; align-items: center; }
+.metric-before { font-family: var(--font-mono); font-size: var(--fs-caption); color: var(--text3); }
+.metric-after  { font-family: var(--font-mono); font-size: var(--fs-caption); color: var(--text); }
+.metric-delta  { font-family: var(--font-mono); font-size: var(--fs-mini); padding: 2px 6px; border-radius: 4px; font-weight: 600; min-width: 52px; text-align: center; }
+.delta-neg { background: #fef2f2; color: #b91c1c; }
+.delta-pos { background: #dcfce7; color: #15803d; }
+.big-metric         { text-align: center; padding: 20px 16px; }
+.big-metric-num     { font-size: 40px; font-weight: 900; font-family: var(--font-mono); color: var(--accent3); line-height: 1; margin-bottom: 6px; }
+.big-metric-label   { font-size: var(--fs-caption); color: var(--text2); }
+
+/* ── timeline (横向) ── */
+.timeline-bar { display: flex; align-items: center; gap: 0; margin-bottom: 28px; position: relative; }
+.tl-node { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.tl-dot  { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--accent2); position: relative; z-index: 1; }
+.tl-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--accent), var(--accent2)); margin: 0 -1px; margin-top: -16px; }
+.tl-date { font-family: var(--font-mono); font-size: 10px; color: var(--accent2); }
+.tl-label { font-size: var(--fs-mini); color: var(--text2); }
+
+/* ── metric-up-card 紧凑指标卡 ── */
+.metric-up-grid  { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+.metric-up-card  { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 12px; text-align: center; }
+.metric-up-num   { font-size: 26px; font-weight: 900; font-family: var(--font-mono); color: var(--accent3); line-height: 1; margin-bottom: 4px; }
+.metric-up-label { font-size: 10px; color: var(--text3); }
+.metric-up-sub   { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+/* ── phase 阶段时间线 ── */
+.phase-timeline { display: grid; grid-template-columns: 1fr 40px 1fr 40px 1fr; gap: 0; align-items: start; flex: 1; }
+.phase-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; height: 100%; }
+.phase-date { font-family: var(--font-mono); font-size: 10px; color: var(--accent2); letter-spacing: 0.1em; margin-bottom: 8px; }
+.phase-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+.phase-arrow { display: flex; align-items: center; justify-content: center; color: var(--text3); font-size: 18px; margin-top: 60px; }
+.phase-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+.phase-item-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); margin-top: 7px; flex-shrink: 0; }
+.phase-item-text { font-size: var(--fs-caption); color: var(--text2); line-height: 1.5; }
+
+.phase-layout { flex: 1; display: grid; grid-template-columns: minmax(300px, 0.95fr) 1.15fr; gap: 16px; min-height: 0; align-items: stretch; }
+.phase-timeline-v { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.phase-timeline-v .phase-box { padding: 14px 16px; height: auto; flex: 0 0 auto; }
+.phase-timeline-v .phase-title { font-size: 13px; margin-bottom: 8px; }
+.phase-timeline-v .phase-date { margin-bottom: 4px; }
+.phase-timeline-v .phase-item { margin-bottom: 4px; }
+.phase-timeline-v .phase-item-text { font-size: 11px; }
+.phase-arrow-v { flex: 1 1 0; min-height: 22px; display: flex; align-items: center; justify-content: center; color: var(--text3); font-size: 14px; line-height: 1; margin: 0; }
+.phase-charts { display: grid; grid-template-rows: 1fr 1fr; gap: 12px; min-height: 0; }
+
+/* ── chart-card 通用图表容器 ── */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.chart-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.chart-card-title { font-size: var(--fs-caption); color: var(--text2); font-weight: 700; }
+.chart-card-note  { font-size: 10px; color: var(--text3); font-family: var(--font-mono); }
+.chart-card-body  { flex: 1; min-height: 0; position: relative; }
+.chart-card-body > div[id^="chart-"] { width: 100%; height: 100%; }
+
+/* ── 国家对比小卡 ── */
+.country-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.cc-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+.cc-country { font-size: var(--fs-mini); font-weight: 700; color: var(--accent2); margin-bottom: 8px; }
+.cc-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.cc-k { font-size: var(--fs-mini); color: var(--text3); }
+.cc-v { font-family: var(--font-mono); font-size: var(--fs-mini); color: var(--text); }
+.cc-v.highlight { color: var(--warn); font-weight: 700; }
+
+/* ── tabs ── */
+.stab {
+  flex: 1; background: none; border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text3);
+  font-family: var(--font-sans);
+  font-size: var(--fs-mini);
+  padding: 8px 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.stab:hover { color: var(--text2); }
+.stab.active { color: var(--accent2); border-bottom-color: var(--accent2); font-weight: 600; }
+
+/* ── mini-bar 横向 Top-N 条形（自定义，不用 chart 库） ── */
+.mini-bar-row { display: flex; align-items: center; gap: 6px; flex: 1 1 0; min-height: 0; line-height: 1; }
+.mini-bar-label { font-size: 10px; color: var(--text3); width: 68px; flex-shrink: 0; text-align: right; }
+.mini-bar-track { flex: 1; height: 7px; background: var(--surface2); border-radius: 2px; position: relative; }
+.mini-bar-fill { position: absolute; top: 0; left: 0; height: 100%; border-radius: 2px; }
+.mini-bar-val { font-family: var(--font-mono); font-size: 10px; color: var(--text3); width: 58px; flex-shrink: 0; text-align: right; }
+
+/* ── insight-box 科普/原理说明框 ── */
+.insight-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.insight-title { font-size: var(--fs-caption); font-weight: 700; color: var(--text2); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.insight-title::before { content: ''; display: block; width: 3px; height: 12px; background: var(--accent); border-radius: 2px; }
+.insight-text { font-size: var(--fs-caption); color: var(--text3); line-height: 1.7; }
+.insight-text strong { color: var(--text2); }
+
+/* ── card-conclusion 卡片底部小结 ── */
+.card-conclusion {
+  flex-shrink: 0;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  font-size: var(--fs-body);
+  color: var(--text3);
+  line-height: 1.6;
+}
+.footer-conclusion {
+  flex-shrink: 0;
+  font-size: var(--fs-body);
+  color: var(--text3);
+  line-height: 1.6;
+  text-align: center;
+}
+/* ══════════════════════════════════════════════════════════
+   Landscape Map · 高级咨询报告风（McKinsey/BCG 克制优雅）
+   ─ tier 退为辅助：左细色脊 + 淡底 + 深字（不撞色大色块）
+   ─ item 去描边：靠留白 + 发丝线分组（咨询 logo 墙）
+   ─ 适度留白：item 自然高度居中，不拉伸变形
+   ─ 字体层级：分类标题大字重+字距，tier 标签收小
+   ─ 精致：分类卡单层微阴影、发丝分隔线、统一圆形 logo
+   关键结构铁律：每 tier 的 --span 合计必须 = 12，否则折行留白
+══════════════════════════════════════════════════════════ */
+.diagram-landscape {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 18px;
+  width: 100%;
+  padding: 4px 2px;
+  --lm-b1: #5b8def;
+  --lm-b2: var(--accent, #0052D9);
+  --lm-b3: color-mix(in srgb, var(--accent, #0052D9) 60%, #1e293b);
+  --lm-w1: color-mix(in srgb, var(--lm-b1) 8%, transparent);
+  --lm-w2: color-mix(in srgb, var(--accent, #0052D9) 7%, transparent);
+  --lm-w3: color-mix(in srgb, var(--lm-b3) 8%, transparent);
+  --lm-hair: color-mix(in srgb, var(--text, #0f172a) 9%, transparent);
+}
+
+/* ── 一级：tier 行（左标签固定宽 → 三行左边界对齐）── */
+.lm-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  grid-template-rows: 1fr;
+  gap: 18px;
+  min-height: 0;
+}
+.lm-row > * { min-height: 0; }
+/* 三大模块之间发丝虚线分隔（极淡，不抢） */
+.lm-row + .lm-row::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  margin-top: -10px;
+  border-top: 1px dashed var(--lm-hair);
+}
+
+/* tier 标签 = 层级起头：文字足够大 + 居中对齐（细色脊 + 淡底 + 深字） */
+.lm-tag {
+  border-radius: 4px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;   /* 居中对齐 */
+  gap: 6px; padding: 14px 8px;
+  background: var(--tier-wash);
+  border-left: 3px solid var(--tier-c);
+}
+.tier-1 { --tier-c: var(--lm-b1); --tier-wash: var(--lm-w1); }
+.tier-2 { --tier-c: var(--lm-b2); --tier-wash: var(--lm-w2); }
+.tier-3 { --tier-c: var(--lm-b3); --tier-wash: var(--lm-w3); }
+.lt-arrow { font-size: 11px; color: var(--tier-c); opacity: 0.85; }
+.lt-name  { font-size: 22px; font-weight: 800; line-height: 1.2; color: var(--text); letter-spacing: 1px; text-align: center; }
+
+/* ── 二级：12 栅格；grid-auto-rows:1fr 撑满高度 ── */
+.lm-cols {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 14px;
+  min-height: 0;
+}
+/* 分类卡：白底 + 单层微阴影 + 软圆角（精致感来源） */
+.lm-col {
+  grid-column: span var(--span, 3);
+  background: var(--surface);
+  border: 1px solid var(--lm-hair);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 4px 12px -6px rgba(15,23,42,0.06);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* 二级标题：深字 + 字距 + 细色竖条（不再蓝条白字） */
+.lc-h {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 700; color: var(--text);
+  letter-spacing: 0.3px;
+  padding: 11px 14px 9px;
+  border-bottom: 1px solid var(--lm-hair);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lc-h::before {
+  content: ""; width: 3px; height: 13px; border-radius: 2px;
+  background: var(--tier-c); flex-shrink: 0;
+}
+
+/* 三级内容：自然高度居中 + 适度留白，不拉伸 */
+.lc-body {
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px 14px;
+  align-content: center;
+  overflow: hidden;
+}
+
+.lm-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 4px;
+  font-size: 13px; font-weight: 500; color: var(--text2);
+  line-height: 1.2; min-width: 0; overflow: hidden;
+  border-radius: 6px;
+}
+.lm-item .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lm-item.sm { font-size: 11.5px; gap: 6px; padding: 5px 3px; }
+
+/* 统一 logo 规范：圆形 + 淡环 + 白底 */
+.lm-logo {
+  width: 20px; height: 20px; border-radius: 50%;
+  object-fit: contain; background: #fff;
+  box-shadow: 0 0 0 1px var(--lm-hair); flex-shrink: 0; padding: 1px;
+}
+.lm-item.sm .lm-logo { width: 17px; height: 17px; }
+.lm-fallback {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; color: #fff;
+  font-family: var(--font-display, var(--font-mono));
+}
+.lm-item.sm .lm-fallback { width: 17px; height: 17px; font-size: 8px; }
+
+/* ── 嵌套：大格内再切小格 —— 发丝缝分组，无重描边 ── */
+.lm-col.nest { grid-template-rows: auto 1fr; }
+.lc-sub {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 1px; padding: 0;
+  min-height: 0; overflow: hidden;
+  background: var(--lm-hair);
+}
+.lc-sub.two  { grid-template-columns: repeat(2, 1fr); }
+.lc-sub.four { grid-template-columns: repeat(4, 1fr); }
+
+.ls-cell {
+  background: var(--surface);
+  display: grid; grid-template-rows: auto 1fr;
+  overflow: hidden; min-height: 0;
+}
+.ls-h {
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  letter-spacing: 0.4px;
+  padding: 7px 8px 5px; text-align: center;   /* 短标签居中，与 tier 起头呼应 */
+  border-bottom: 1px solid var(--lm-hair); margin-bottom: 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ls-body {
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 2px; padding: 2px 7px 8px;
+  min-height: 0; overflow: hidden;
+}
+.ls-body .lm-item.sm { flex: 0 1 auto; min-height: 0; }
+
+/* dark 主题适配 */
+[data-theme="dark-tech"] .diagram-landscape { --lm-hair: rgba(255,255,255,0.10); }
+[data-theme="dark-tech"] .lm-col,
+[data-theme="dark-tech"] .ls-cell { background: rgba(255,255,255,0.025); }
+[data-theme="dark-tech"] .lm-item { color: var(--text2); }
+[data-theme="dark-tech"] .lc-sub { background: rgba(255,255,255,0.08); }
+</style>
+</head>
+<body data-theme="modern-light">
+
+<div class="stage">
+  <div class="canvas">
+    <div class="slides">
+      <!-- ── SLIDE 1 ── -->
+  <div class="slide active" id="s1">
+
+    <div class="slide-label">系统架构</div>
+    <div class="slide-title">推荐系统<span>分层架构</span></div>
+    <div class="slide-subtitle">
+      召回 → 排序 → 重排 三层漏斗 · 从 <strong>百万级</strong> 候选逐层收敛到 <strong>十级</strong> 曝光 · 离线特征平台 + 在线低延迟服务双轮驱动
+    </div>
+
+    <div class="diagram-landscape">
+
+      <!-- ═══ TIER 1 召回层（4 格，合计 span = 3+3+3+3 = 12）═══ -->
+      <div class="lm-row tier-1">
+        <div class="lm-tag"><span class="lt-arrow">▶</span><span class="lt-name">召回<br>Recall</span></div>
+        <div class="lm-cols">
+          <div class="lm-col" style="--span:3;">
+            <div class="lc-h">协同过滤召回</div>
+            <div class="lc-body">
+              <span class="lm-item">ItemCF / UserCF</span>
+              <span class="lm-item">Swing / 矩阵分解</span>
+              <span class="lm-item">关联规则</span>
+            </div>
+          </div>
+          <div class="lm-col" style="--span:3;">
+            <div class="lc-h">向量召回</div>
+            <div class="lc-body">
+              <span class="lm-item">双塔 DSSM</span>
+              <span class="lm-item">YouTube DNN</span>
+              <span class="lm-item">ANN / Faiss</span>
+            </div>
+          </div>
+          <div class="lm-col" style="--span:3;">
+            <div class="lc-h">图 / 序列召回</div>
+            <div class="lc-body">
+              <span class="lm-item">GraphSAGE</span>
+              <span class="lm-item">DeepWalk</span>
+              <span class="lm-item">SIM 兴趣序列</span>
+            </div>
+          </div>
+          <div class="lm-col" style="--span:3;">
+            <div class="lc-h">规则 / 兜底召回</div>
+            <div class="lc-body">
+              <span class="lm-item">热门 / 高质量</span>
+              <span class="lm-item">地域 / 新品</span>
+              <span class="lm-item">兴趣标签</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TIER 2 排序层（3 格，合计 span = 4+4+4 = 12）═══ -->
+      <div class="lm-row tier-2">
+        <div class="lm-tag"><span class="lt-arrow">▶</span><span class="lt-name">排序<br>Ranking</span></div>
+        <div class="lm-cols">
+          <div class="lm-col" style="--span:4;">
+            <div class="lc-h">粗排 Pre-Rank</div>
+            <div class="lc-body">
+              <span class="lm-item">轻量双塔</span>
+              <span class="lm-item">COLD 蒸馏</span>
+              <span class="lm-item">万级 → 千级</span>
+            </div>
+          </div>
+          <div class="lm-col" style="--span:4;">
+            <div class="lc-h">精排 Fine-Rank</div>
+            <div class="lc-body">
+              <span class="lm-item">DeepFM / DIN</span>
+              <span class="lm-item">DIEN / DCN</span>
+              <span class="lm-item">多目标 MMoE</span>
+            </div>
+          </div>
+          <div class="lm-col" style="--span:4;">
+            <div class="lc-h">重排 Re-Rank</div>
+            <div class="lc-body">
+              <span class="lm-item">多样性 MMR / DPP</span>
+              <span class="lm-item">打散 / 频控</span>
+              <span class="lm-item">业务规则 + 强插</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TIER 3 基础设施（2 格，合计 span = 6+6 = 12）═══ -->
+      <div class="lm-row tier-3">
+        <div class="lm-tag"><span class="lt-arrow">▶</span><span class="lt-name">基础<br>设施</span></div>
+        <div class="lm-cols">
+          <div class="lm-col nest" style="--span:6;">
+            <div class="lc-h">特征 / 样本平台（离线）</div>
+            <div class="lc-sub four">
+              <div class="ls-cell"><div class="ls-h">特征工程</div><div class="ls-body">
+                <span class="lm-item sm">特征仓库</span>
+                <span class="lm-item sm">实时特征</span></div></div>
+              <div class="ls-cell"><div class="ls-h">样本</div><div class="ls-body">
+                <span class="lm-item sm">曝光点击拼接</span>
+                <span class="lm-item sm">负采样</span></div></div>
+              <div class="ls-cell"><div class="ls-h">训练</div><div class="ls-body">
+                <span class="lm-item sm">离线训练</span>
+                <span class="lm-item sm">增量更新</span></div></div>
+              <div class="ls-cell"><div class="ls-h">数据流</div><div class="ls-body">
+                <span class="lm-item sm">Flink / Kafka</span>
+                <span class="lm-item sm">数据湖</span></div></div>
+            </div>
+          </div>
+          <div class="lm-col nest" style="--span:6;">
+            <div class="lc-h">在线服务 / 工程（低延迟）</div>
+            <div class="lc-sub four">
+              <div class="ls-cell"><div class="ls-h">推理服务</div><div class="ls-body">
+                <span class="lm-item sm">TF Serving</span>
+                <span class="lm-item sm">模型热更新</span></div></div>
+              <div class="ls-cell"><div class="ls-h">在线存储</div><div class="ls-body">
+                <span class="lm-item sm">Redis / KV</span>
+                <span class="lm-item sm">向量库</span></div></div>
+              <div class="ls-cell"><div class="ls-h">AB 实验</div><div class="ls-body">
+                <span class="lm-item sm">分流框架</span>
+                <span class="lm-item sm">指标平台</span></div></div>
+              <div class="ls-cell"><div class="ls-h">监控</div><div class="ls-body">
+                <span class="lm-item sm">链路监控</span>
+                <span class="lm-item sm">效果回归</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV (固定屏幕底部，不随 canvas 缩放) -->
+<div class="nav">
+  <button onclick="go(-1)">← 上一页</button>
+  <div class="dots" id="dots"></div>
+  <div class="slide-counter" id="counter">1 / 1</div>
+  <button onclick="go(1)">下一页 →</button>
+</div>
+
+<!-- THEME SWITCHER (右上角) -->
+<div class="theme-switcher" id="themeSwitcher"></div>
+
+<script>
+
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════
+   COMMON — 自适应 + 导航 + ECharts helper + 主题切换桥接
+   修改任意一页内容时不需要动这个文件
+══════════════════════════════════════════════════════════ */
+
+// ── 自适应：把整张 1600×900 设计稿等比缩放到当前窗口（底部预留 nav 空间） ──
+function fitCanvas() {
+  const baseW = 1600, baseH = 900;
+  const navReserve = 88;
+  const w = window.innerWidth;
+  const h = Math.max(0, window.innerHeight - navReserve);
+  const scale = Math.min(w / baseW, h / baseH);
+  document.documentElement.style.setProperty('--fit', scale.toFixed(4));
+  // 通知所有 ECharts 实例 resize（chart 内部 width/height 不随 transform scale 变，
+  // 但因为 chart 容器以 px 定，所以本质不需要 resize；保留以防 chart 容器尺寸真的变）
+  if (window.__charts) {
+    Object.values(window.__charts).forEach(c => { try { c.resize(); } catch (e) {} });
+  }
+}
+window.addEventListener('resize', fitCanvas);
+window.addEventListener('orientationchange', fitCanvas);
+window.addEventListener('DOMContentLoaded', fitCanvas);
+
+// ── ECharts 实例注册表（用于切主题时重渲染） ──
+window.__charts = window.__charts || {};
+window.__chartOptions = window.__chartOptions || {};
+
+// ── Slide 切换 ──
+let __slides = null;
+let __dotsEl = null;
+let __cur = 0;
+let __total = 0;
+
+function __initNav() {
+  __slides = document.querySelectorAll('.slide');
+  __total = __slides.length;
+  __dotsEl = document.getElementById('dots');
+  for (let i = 0; i < __total; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    __dotsEl.appendChild(d);
+  }
+  document.getElementById('counter').textContent = '1 / ' + __total;
+  __slides.forEach(s => s.classList.remove('active'));
+  if (__slides.length) __slides[0].classList.add('active');
+  __cur = 0;
+}
+
+function goTo(n) {
+  __slides[__cur].classList.remove('active');
+  __dotsEl.children[__cur].classList.remove('active');
+  __cur = (n + __total) % __total;
+  __slides[__cur].classList.add('active');
+  __dotsEl.children[__cur].classList.add('active');
+  document.getElementById('counter').textContent = (__cur + 1) + ' / ' + __total;
+  initCharts(__cur);
+}
+function go(d) { goTo(__cur + d); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+});
+
+// ── tab 通用切换 ──
+function switchTab(group, idx) {
+  document.querySelectorAll(`.stab[data-group="${group}"]`).forEach((btn, i) => {
+    btn.classList.toggle('active', i === idx);
+  });
+  document.querySelectorAll(`.stab-panel[data-group="${group}"]`).forEach(panel => {
+    panel.style.display = parseInt(panel.dataset.idx) === idx ? 'block' : 'none';
+  });
+}
+
+// ── 图表初始化分发器 ──
+const __chartsInited = {};
+function initCharts(idx) {
+  if (__chartsInited[idx]) return;
+  __chartsInited[idx] = true;
+  const fn = window['initSlide' + (idx + 1)];
+  if (typeof fn === 'function') fn();
+}
+
+// ══════════════════════════════════════════════════════════
+//  ECharts helper
+// ══════════════════════════════════════════════════════════
+
+// 把 'var(--accent)' 这种字符串解析为实际颜色值
+function _cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+function _resolveVars(value) {
+  if (typeof value !== 'string') return value;
+  return value.replace(/var\((--[\w-]+)\)/g, (_, n) => _cssVar(n));
+}
+function resolveCssVars(obj) {
+  if (Array.isArray(obj)) return obj.map(resolveCssVars);
+  if (obj && typeof obj === 'object') {
+    const out = {};
+    for (const k in obj) out[k] = resolveCssVars(obj[k]);
+    return out;
+  }
+  return _resolveVars(obj);
+}
+
+// ECharts 全局基线
+function getEchartsBase() {
+  return {
+    textStyle: { fontFamily: _cssVar('--font-sans'), color: _cssVar('--text2') },
+    grid: { left: 40, right: 24, top: 24, bottom: 32, containLabel: true },
+    legend: {
+      bottom: 0, itemGap: 16, itemWidth: 12, itemHeight: 8,
+      textStyle: { color: _cssVar('--text2'), fontSize: 11 },
+    },
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(15,23,42,0.95)',
+      borderWidth: 0,
+      textStyle: { color: '#ffffff', fontSize: 11 },
+      axisPointer: { type: 'line', lineStyle: { color: 'rgba(15,23,42,0.20)', type: 'dashed' } }
+    },
+    xAxis: {
+      type: 'category',
+      axisLine:  { lineStyle: { color: _cssVar('--border') } },
+      axisTick:  { show: false },
+      axisLabel: { color: _cssVar('--text3'), fontSize: 10 },
+      splitLine: { show: false },
+    },
+    yAxis: {
+      type: 'value',
+      axisLine:  { show: false },
+      axisTick:  { show: false },
+      axisLabel: { color: _cssVar('--text3'), fontSize: 10 },
+      splitLine: { lineStyle: { color: _cssVar('--border') } },
+    },
+    color: [
+      _cssVar('--accent'),  _cssVar('--accent2'), _cssVar('--accent3'),
+      _cssVar('--warn'),    '#8b5cf6',            _cssVar('--danger'),
+    ],
+    animation: true,
+    animationDuration: 600,
+  };
+}
+
+// 深合并（option 对象级，简单场景够用）
+function mergeDeep(a, b) {
+  if (!b) return a;
+  const out = { ...a };
+  for (const k in b) {
+    if (b[k] && typeof b[k] === 'object' && !Array.isArray(b[k])) {
+      out[k] = mergeDeep(a[k] || {}, b[k]);
+    } else {
+      out[k] = b[k];
+    }
+  }
+  return out;
+}
+
+// 初始化 ECharts 并注册到 __charts
+function initChart(elId, optionFactory) {
+  const el = document.getElementById(elId);
+  if (!el) return null;
+  // 若已存在实例（切主题情况），先 dispose
+  if (window.__charts[elId]) {
+    try { window.__charts[elId].dispose(); } catch (e) {}
+  }
+  const chart = echarts.init(el);
+  window.__charts[elId] = chart;
+  window.__chartOptions[elId] = optionFactory;
+  const opt = mergeDeep(getEchartsBase(), optionFactory());
+  chart.setOption(resolveCssVars(opt));
+  return chart;
+}
+
+// 切主题后调用：用每个 chart 注册的 factory 重新生成 option
+function reinitAllCharts() {
+  for (const [id, factory] of Object.entries(window.__chartOptions)) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    if (window.__charts[id]) { try { window.__charts[id].dispose(); } catch (e) {} }
+    const chart = echarts.init(el);
+    window.__charts[id] = chart;
+    const opt = mergeDeep(getEchartsBase(), factory());
+    chart.setOption(resolveCssVars(opt));
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  常用图表范本
+// ══════════════════════════════════════════════════════════
+
+// 1) 双 y 轴时间序列折线（主指标 + 副指标 + 里程碑竖线）
+//    cfg 可选：{ leftName, rightName, leftUnit, rightUnit }
+function renderDailyDual(elId, labels, leftData, rightData, marks = [], cfg = {}) {
+  const leftName  = cfg.leftName  || '主指标';
+  const rightName = cfg.rightName || '副指标';
+  return initChart(elId, () => ({
+    legend: { data: [leftName, rightName], bottom: 0 },
+    xAxis: { data: labels, axisLabel: { interval: 'auto', maxTicksLimit: 15 } },
+    yAxis: [
+      { type: 'value', name: cfg.leftUnit  || leftName,  nameTextStyle: { fontSize: 9 }, position: 'left' },
+      { type: 'value', name: cfg.rightUnit || rightName, nameTextStyle: { fontSize: 9 }, position: 'right', splitLine: { show: false } },
+    ],
+    series: [
+      {
+        name: leftName, type: 'line', data: leftData,
+        smooth: 0.35, symbol: 'none',
+        lineStyle: { width: 1.8 },
+        areaStyle: { opacity: 0.08 },
+        yAxisIndex: 0,
+        markLine: marks.length ? {
+          symbol: 'none',
+          lineStyle: { type: 'dashed', width: 1 },
+          label: { fontSize: 9, position: 'insideEndTop' },
+          data: marks.map(m => ({
+            xAxis: m.x,
+            label: { formatter: m.label, color: m.color },
+            lineStyle: { color: m.color },
+          })),
+        } : undefined,
+      },
+      {
+        name: rightName, type: 'line', data: rightData,
+        smooth: 0.35, symbol: 'none',
+        lineStyle: { width: 1.5, type: 'dashed' },
+        yAxisIndex: 1,
+      },
+    ],
+  }));
+}
+
+// 2) 100% 堆叠条形（前后占比对比）
+function renderShare100(elId, categoryLabels, seriesNames, preData, postData) {
+  const series = seriesNames.map((name, i) => ({
+    name, type: 'bar', stack: 'pct',
+    barCategoryGap: '40%',
+    label: {
+      show: true,
+      formatter: p => p.value < 4 ? '' : p.value.toFixed(1) + '%',
+      color: '#fff', fontSize: 10, fontWeight: 600,
+    },
+    data: [preData[i], postData[i]],
+  }));
+  return initChart(elId, () => ({
+    legend: { bottom: 0 },
+    yAxis: { type: 'category', data: categoryLabels, axisLine: { show: false } },
+    xAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%' } },
+    series,
+  }));
+}
+
+// 3) 多对象趋势对比（折线）
+function renderMultiTrend(elId, labels, seriesMap /* {name: data[]} */, colorMap) {
+  const series = Object.keys(seriesMap).map(name => ({
+    name, type: 'line', data: seriesMap[name],
+    smooth: 0.35, symbol: 'none',
+    lineStyle: { width: 2, color: colorMap?.[name] },
+    itemStyle: { color: colorMap?.[name] },
+  }));
+  return initChart(elId, () => ({
+    legend: { bottom: 0, data: Object.keys(seriesMap) },
+    xAxis: { data: labels, axisLabel: { maxTicksLimit: 10 } },
+    yAxis: { axisLabel: { formatter: '{value}%' } },
+    series,
+  }));
+}
+
+// 4) 横向 Top-N mini-bar（自定义 div，不用 ECharts；外层容器需有 flex 布局）
+function renderMiniBars(containerId, items /* [[name, val], ...] */, color) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  const max = Math.max(...items.map(([, v]) => v));
+  items.forEach(([name, val]) => {
+    const pct = max ? Math.max(2, val / max * 100) : 0;
+    el.insertAdjacentHTML('beforeend', `
+      <div class="mini-bar-row">
+        <div class="mini-bar-label">${name}</div>
+        <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${pct}%;background:${color};"></div></div>
+        <div class="mini-bar-val">${val.toLocaleString()}</div>
+      </div>`);
+  });
+}
+
+// 5) KPI 网格渲染（从数据生成）
+function renderKpiGrid(containerId, kpis /* [{num, label, sub, color}] */) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = kpis.map(k => `
+    <div class="kpi-card ${k.color || 'blue'}">
+      ${k.icon ? `<div class="kpi-icon">${k.icon}</div>` : ''}
+      <div class="kpi-num">${k.num}</div>
+      <div class="kpi-label">${k.label}</div>
+      ${k.sub ? `<div class="kpi-desc">${k.sub}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ── Boot ──
+window.addEventListener('DOMContentLoaded', () => {
+  __initNav();
+  initCharts(0);
+});
+
+/* ══════════════════════════════════════════════════════════
+   THEME SWITCHER — 5 套预设主题切换
+   切主题后会自动用 reinitAllCharts() 重渲染所有 ECharts 实例
+══════════════════════════════════════════════════════════ */
+
+const THEMES = [
+  { key: 'modern-light',   label: 'Light' },
+  { key: 'dark-tech',      label: 'Dark' },
+  { key: 'warm-business',  label: 'Warm' },
+  { key: 'brand-blue',     label: 'Brand' },
+  { key: 'minimal-mono',   label: 'Mono' },
+];
+
+function applyTheme(name) {
+  document.body.setAttribute('data-theme', name);
+  try { localStorage.setItem('report-theme', name); } catch (e) {}
+  // 更新 switcher 按钮状态
+  document.querySelectorAll('#themeSwitcher button').forEach(b => {
+    b.classList.toggle('active', b.dataset.themeBtn === name);
+  });
+  // 重渲染 ECharts
+  if (typeof reinitAllCharts === 'function') reinitAllCharts();
+}
+
+function initThemeSwitcher() {
+  const sw = document.getElementById('themeSwitcher');
+  if (!sw) return;
+  sw.innerHTML = THEMES.map(t =>
+    `<button data-theme-btn="${t.key}" title="${t.key}">${t.label}</button>`
+  ).join('');
+  sw.addEventListener('click', e => {
+    const t = e.target.dataset.themeBtn;
+    if (t) applyTheme(t);
+  });
+  let saved = 'modern-light';
+  try { saved = localStorage.getItem('report-theme') || 'modern-light'; } catch (e) {}
+  applyTheme(saved);
+}
+
+window.addEventListener('DOMContentLoaded', initThemeSwitcher);
+
+function initSlide1() {}
+</script>
+</body>
+</html>

@@ -94,9 +94,9 @@ function initSlide3() {
 ### Step 6 — 构建与预览
 
 ```
-python3 build.py            # 合成最终 HTML（文件名可在 build.py 顶部 CONFIG 改）
-open *.html                 # 浏览器打开，按 ←/→ 翻页
-python3 export_pdf.py       # （可选）导出 PDF
+python3 build.py            # 合成最终 HTML → 输出到 dist/（目录/文件名可在 build.py 顶部 CONFIG 改）
+open dist/*.html            # 浏览器打开，按 ←/→ 翻页
+python3 export_pdf.py       # （可选）导出 PDF（自动找 dist/，输出 dist/*.pdf）
 ```
 
 ### Step 7 — 主题切换（可选）
