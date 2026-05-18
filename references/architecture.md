@@ -7,9 +7,10 @@ my-report/
 ├── dist/                      ← 构建产物目录（build.py 自动创建）
 │   ├── 我的汇报.html          ← 最终产物（build.py 生成）
 │   └── 我的汇报.pdf           ← export_pdf.py 生成（可选）
-├── build.py                   ← 合并脚本
+├── build.py                   ← 合并脚本（也把 src/assets/ 拷进 dist/）
 ├── export_pdf.py              ← PDF 导出脚本
 ├── xlsx2json.py               ← Excel/CSV → JSON 转换器（被 build 自动调用，也可单跑）
+├── fetch_logos.py             ← 扫描 data-d 域名 → 下载公司 logo 到 src/assets/logos/（需联网，跑一次）
 └── src/
     ├── shell.html             ← HTML 骨架，含 {{STYLES}} {{SLIDES}} {{SCRIPTS}} 占位
     ├── styles/
@@ -23,6 +24,8 @@ my-report/
     │   ├── common.js          ← 自适应 + 导航 + ECharts helper
     │   ├── slide-1.js         ← 必须导出 initSlide1() 函数
     │   └── slide-N.js
+    ├── assets/                ← 本项目静态资源（build 时整体拷进 dist/assets/）
+    │   └── logos/             ← fetch_logos.py 下载的公司 logo，跟着本项目走
     └── data/                  ← 三种格式自由选择，build.py 自动转 JSON 注入
         ├── slide-1.xlsx       ← 推荐：日常用 Excel 改数据
         ├── slide-2.csv        ← 单表数据

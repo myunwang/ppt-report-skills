@@ -44,9 +44,10 @@ rsync -a --exclude='__pycache__' --exclude='.DS_Store' "$ASSETS_DIR/" "$TARGET/s
 mv "$TARGET/src/build.py" "$TARGET/build.py"
 mv "$TARGET/src/export_pdf.py" "$TARGET/export_pdf.py"
 mv "$TARGET/src/xlsx2json.py" "$TARGET/xlsx2json.py"
+mv "$TARGET/src/fetch_logos.py" "$TARGET/fetch_logos.py"
 
-# 创建 build.py 期望的目录
-mkdir -p "$TARGET/src/slides" "$TARGET/src/data"
+# 创建 build.py 期望的目录（含本项目独立的 logo 存放目录）
+mkdir -p "$TARGET/src/slides" "$TARGET/src/data" "$TARGET/src/assets/logos"
 
 # 准备一个最小可运行的占位封面页（让 build 能直接跑通）
 cat > "$TARGET/src/slides/slide-1.html" <<'EOF'

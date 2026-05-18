@@ -89,8 +89,14 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .lc-h::before {
-  content: ""; width: 3px; height: 13px; border-radius: 2px;
+  content: ""; width: 3px; height: 14px; border-radius: 2px;
   background: var(--tier-c); flex-shrink: 0;
+}
+/* 分类标题语义图标：随主题色，圆角淡底衬托，绝不超出标题行 */
+.lc-ic {
+  width: 16px; height: 16px; flex-shrink: 0;
+  color: var(--tier-c);
+  stroke-width: 2;
 }
 
 /* 三级内容：自然高度居中 + 适度留白，不拉伸 */

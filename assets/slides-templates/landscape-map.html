@@ -27,9 +27,13 @@
 
   4. 三大模块之间水平虚线分隔：.lm-row + .lm-row { border-top:1.5px dashed }
 
-  5. 公司 logo（在线引用 + 多源回退）：
+  5. 公司 logo（★ 本地化，跟着 PPT 项目走，离线/导出 PDF 不崩）：
      - item 写 data-d="域名"，文字写公司名（用业内通用简称避免截断）。
-     - slide-N.js 里跑下面这段（多源回退链，离线/导出 PDF 不崩）：
+     - logo 不在线引用，而是下载到本项目 src/assets/logos/（与 src/data/ 同级，
+       每个 PPT 项目独立、互不污染）。两步：
+         (a) 写完 slide 后，在项目根跑：python3 fetch_logos.py
+             （扫描所有 data-d 域名 → 多源下载 → 存 src/assets/logos/<域名>.png）
+         (b) slide-N.js 里放下面这段（引用本地路径，下载失败回退首字母色块）：
 
      function initSlideN() {
        const PAL=['#0052D9','#00A4FF','#4a90e2','#003a99','#1d6fd6','#2b5fc0'];
@@ -41,17 +45,18 @@
          fb.className='lm-fallback'; fb.style.background=PAL[i%PAL.length]; fb.textContent=ini;
          const s=document.createElement('span'); s.className='nm'; s.textContent=nm;
          if(!dn){ el.append(fb,s); return; }
-         const src=[`https://logo.clearbit.com/${dn}?size=40`,
-                    `https://www.google.com/s2/favicons?domain=${dn}&sz=64`,
-                    `https://icons.duckduckgo.com/ip3/${dn}.ico`];
-         let k=0;
          const img=document.createElement('img');
          img.className='lm-logo'; img.loading='lazy'; img.alt=nm;
-         img.referrerPolicy='no-referrer'; img.src=src[k];
-         img.onerror=()=>{ k++; k<src.length ? img.src=src[k] : img.replaceWith(fb); };
+         img.src='assets/logos/'+dn.replace(/\./g,'_')+'.png';  // ← 本地路径
+         img.onerror=()=>img.replaceWith(fb);                    // 没下到就色块
          el.append(img,s);
        });
      }
+
+  ★★ 用本模板的两个必做步骤（最容易漏，漏了就退化成纯文字/无 logo）：
+     1. 本模板末尾的 <style> 块必须整体拆到 src/styles/slide-N.css
+        （build.py 只注入 src/styles/slide-N.css，不解析 slide 片段内嵌 <style>）。
+     2. 上面的 initSlideN() 必须放进 src/scripts/slide-N.js，并跑 fetch_logos.py。
 
   内容多的分类（如"行业应用"）→ 大 --span + .nest 内部再切 .ls-cell 小格。
   尺寸：基于 1600×900，diagram-landscape 用 flex:1 撑满 .slide 中部。

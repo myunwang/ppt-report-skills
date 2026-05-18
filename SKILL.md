@@ -133,14 +133,15 @@ python3 export_pdf.py       # （可选）导出 PDF（自动找 dist/，输出 
 `assets/` 下都是**可直接拷贝**的成品文件：
 
 - `shell.html` — HTML 骨架（含 `{{STYLES}}` `{{SLIDES}}` `{{SCRIPTS}}` 占位符）
-- `build.py` — 合成脚本（按页号顺序拼接）
+- `build.py` — 合成脚本（按页号顺序拼接；同时把 src/assets/ 拷进 dist/）
 - `export_pdf.py` — PDF 导出（playwright + img2pdf）
+- `fetch_logos.py` — 扫描 slide 里 data-d 域名，下载公司 logo 到本项目 src/assets/logos/（landscape-map 等需要 logo 的页用；需联网，跑一次）
 - `styles/common.css` — 全局样式 + 5 套主题变量
 - `styles/components.css` — 通用组件
 - `scripts/common.js` — 自适应、导航、ECharts helper
 - `scripts/theme-switcher.js` — 主题切换 UI
 - `data/slide-N.json` — 数据样例
-- `slides-templates/*.html` — 5 套页面模板
+- `slides-templates/*.html` — 6 套页面模板（含 landscape-map 产业图谱）
 
 ## 初始化新项目（推荐流程）
 

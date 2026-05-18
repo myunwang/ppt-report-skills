@@ -22,6 +22,7 @@
 from pathlib import Path
 import json
 import re
+import shutil
 import sys
 
 # 同目录的 xlsx2json 提供 Excel / CSV 读取能力
@@ -155,6 +156,19 @@ def main() -> None:
     )
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(final, encoding='utf-8')
+
+    # ── 6. 拷贝静态资源 src/assets/ → dist/assets/（如 logo 本地图标）──
+    # HTML 里用相对路径 assets/logos/xxx.png 引用，产物在 dist/，
+    # 必须把 src/assets/ 同步过去，否则离线/导出 PDF 时图标断链。
+    assets_src = SRC / 'assets'
+    if assets_src.is_dir():
+        assets_dst = OUT.parent / 'assets'
+        if assets_dst.exists():
+            shutil.rmtree(assets_dst)
+        shutil.copytree(assets_src, assets_dst)
+        n_files = sum(1 for _ in assets_dst.rglob('*') if _.is_file())
+        print(f'  ↳ copied src/assets/ → {assets_dst.relative_to(ROOT)} ({n_files} files)')
+
     print(f'✓ Built: {OUT.relative_to(ROOT)}  ({len(final):,} chars, {final.count(chr(10)) + 1} lines, {n} slides)')
 
 
