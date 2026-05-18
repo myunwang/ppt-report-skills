@@ -33,6 +33,8 @@ OUT_PDF = sys.argv[2] if len(sys.argv) > 2 else HTML_PATH.replace('.html', '.pdf
 
 W, H = 1600, 900
 DSF = 2  # device_scale_factor — 截图分辨率倍数
+# 截图前等当前页所有 <img>（在线 logo 多源回退可能较慢）最多等这么久
+WAIT_IMG_MS = 15000
 
 OVERRIDE_CSS = """
 :root { --fit: 1 !important; --nav-reserve: 0px !important; }
@@ -74,7 +76,9 @@ def main():
         page = ctx.new_page()
         page.on('pageerror', lambda e: print('[pageerror]', e))
         page.goto('file://' + HTML_PATH)
-        page.wait_for_load_state('networkidle')
+        # 不再死等 networkidle（在线 logo 会让网络一直不空闲导致超时）；
+        # 每页截图前有专门的 <img> 加载等待逻辑兜底。
+        page.wait_for_load_state('domcontentloaded')
         page.add_style_tag(content=OVERRIDE_CSS)
         page.evaluate(DISABLE_ANIM_JS)
         page.wait_for_timeout(300)
@@ -99,6 +103,24 @@ def main():
                 i,
             )
             page.wait_for_timeout(500)  # 等 ECharts 完成同步绘制
+
+            # 等当前 slide 里所有 <img>（含在线 logo + 多源回退）真正加载完，
+            # 再截图，否则会截到 logo 缺失/半张。每张图最多等 WAIT_IMG_MS。
+            try:
+                page.wait_for_function(
+                    """() => {
+                        const a = document.querySelector('.slide.active') || document;
+                        const imgs = [...a.querySelectorAll('img')];
+                        // complete 且 naturalWidth>0 = 加载成功；
+                        // complete 但 naturalWidth==0 = 已走完 onerror 回退（视为完成）
+                        return imgs.every(im => im.complete);
+                    }""",
+                    timeout=WAIT_IMG_MS,
+                )
+            except Exception:
+                print(f'  ⚠ page {i+1}: 部分图片 {WAIT_IMG_MS}ms 内未加载完，按现状截图')
+            page.wait_for_timeout(200)  # 图片 onload 后留一帧给浏览器绘制
+
             out = os.path.join(ROOT, f'_pdf_p{i+1}.png')
             page.screenshot(path=out, clip={'x': 0, 'y': 0, 'width': W, 'height': H})
             png_paths.append(out)

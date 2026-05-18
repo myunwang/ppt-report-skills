@@ -135,7 +135,7 @@ python3 export_pdf.py       # （可选）导出 PDF（自动找 dist/，输出 
 - `shell.html` — HTML 骨架（含 `{{STYLES}}` `{{SLIDES}}` `{{SCRIPTS}}` 占位符）
 - `build.py` — 合成脚本（按页号顺序拼接；同时把 src/assets/ 拷进 dist/）
 - `export_pdf.py` — PDF 导出（playwright + img2pdf）
-- `fetch_logos.py` — 扫描 slide 里 data-d 域名，下载公司 logo 到本项目 src/assets/logos/（landscape-map 等需要 logo 的页用；需联网，跑一次）
+- `fetch_logos.py` — 可选：把在线 logo 下载缓存到本项目 src/assets/logos/ 供离线/存档（landscape-map 默认在线引用 logo，不跑此脚本也能显示，跑了则断网也不丢）
 - `styles/common.css` — 全局样式 + 5 套主题变量
 - `styles/components.css` — 通用组件
 - `scripts/common.js` — 自适应、导航、ECharts helper

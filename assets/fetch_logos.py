@@ -30,11 +30,11 @@ import sys
 import urllib.request
 from pathlib import Path
 
-# 多源回退链：按顺序尝试，第一个拿到有效图片就停
+# 与 landscape-map 模板 slide JS 用同样的两个可靠源（这里是离线缓存版）。
+# 只用 Clearbit + Google favicon：查不到会干净 404，不返回占位垃圾图。
 SOURCES = [
     "https://logo.clearbit.com/{d}?size=128",
     "https://www.google.com/s2/favicons?domain={d}&sz=128",
-    "https://icons.duckduckgo.com/ip3/{d}.ico",
 ]
 
 UA = "Mozilla/5.0 (compatible; ppt-report-generator logo fetcher)"
