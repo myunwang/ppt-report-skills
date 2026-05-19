@@ -34,6 +34,8 @@
 
      function initSlideN() {
        const PAL=['#0052D9','#00A4FF','#4a90e2','#003a99','#1d6fd6','#2b5fc0'];
+       // 只做 logo 注入。chip 尺寸全部由 CSS 固定值控制（配合数据规范：
+       // 短词 / 长项拆块 / 英文简写），无需 JS 自适应 —— 简单确定不截断。
        document.querySelectorAll('#sN .lm-item[data-d]').forEach((el,i)=>{
          const dn=(el.dataset.d||'').trim(), nm=el.textContent.trim();
          const ini=(nm.match(/[A-Za-z一-龥]/)||['·'])[0];
@@ -42,8 +44,6 @@
          fb.className='lm-fallback'; fb.style.background=PAL[i%PAL.length]; fb.textContent=ini;
          const s=document.createElement('span'); s.className='nm'; s.textContent=nm;
          if(!dn){ el.append(fb,s); return; }
-         // 源顺序：本地缓存（跑过 fetch_logos.py 才有）→ Clearbit → Google favicon。
-         // 只用这两个在线源：查不到时干净 404 触发 onerror，不会返回占位垃圾图。
          const src=['assets/logos/'+dn.replace(/\./g,'_')+'.png',
                     `https://logo.clearbit.com/${dn}?size=64`,
                     `https://www.google.com/s2/favicons?domain=${dn}&sz=64`];
@@ -53,17 +53,27 @@
          img.referrerPolicy='no-referrer';
          const next=()=>{ k++; k<src.length ? img.src=src[k] : img.replaceWith(fb); };
          img.onerror=next;
-         // 尺寸守卫：加载“成功”但宽高 < 12px 多半是占位垃圾图，也回退
          img.onload=()=>{ if(img.naturalWidth>0 && img.naturalWidth<12) next(); };
          img.src=src[k];
          el.append(img,s);
        });
      }
 
-  ★★ 用本模板的两个必做步骤（最容易漏，漏了就退化成纯文字/无 logo）：
+  ★★ 用本模板的必做步骤（漏了就退化成纯文字 / 截断 / 留白）：
      1. 本模板末尾的 <style> 块必须整体拆到 src/styles/slide-N.css
         （build.py 只注入 src/styles/slide-N.css，不解析 slide 片段内嵌 <style>）。
-     2. 上面的 initSlideN() 必须放进 src/scripts/slide-N.js。
+     2. 上面整段 initSlideN()（仅 logo 注入）放进 src/scripts/slide-N.js。
+        chip 尺寸是 CSS 固定值（font-size:15px / sm 13px），不靠 JS 自适应。
+     3. ★ 内容规范（最关键，PPT 文案本就该如此，从源头杜绝截断）：
+        - 每个 chip 一个短词，**≤ 4~5 字 / 一个英文术语**；
+        - 「A / B」「A + B」这类合并项 → 拆成多个独立 chip（同类就多放
+          几个 chip，不要硬塞一个）。如 ItemCF / UserCF → 两个 chip；
+        - 英文用业内通用简写（DSSM、MMoE、ANN…），不写全称；
+        - 整图不强求铺满 slide，按内容自然高度紧凑、垂直居中即可
+          （咨询报告风：克制紧凑 + 居中 = 专业，硬撑铺满反而廉价）。
+     4. 【生成第一版后必做】渲染出来用 LLM 看截图复查：若有 chip 文字
+        超出（规范文案不会发生）→ 按第 3 条精简该卡文案 / 拆 chip 重跑。
+        固定字号保证规范文案不截断；「最优简称/拆分」需 LLM 二次润色。
 
   ── logo 在线 vs 离线 ────────────────────────────────────────────
   - 默认在线：浏览器查看时联网即显示真 logo，零额外步骤。
@@ -247,14 +257,16 @@
    ─ 精致：分类卡单层微阴影、发丝分隔线、统一圆形 logo
    关键结构铁律：每 tier 的 --span 合计必须 = 12，否则折行留白
 ══════════════════════════════════════════════════════════ */
+/* 不强求铺满：内容自然高度，在 slide 剩余空间垂直居中（紧凑+专业）。 */
 .diagram-landscape {
-  flex: 1;
+  flex: 0 1 auto;
+  margin: auto 0;
   min-height: 0;
   display: grid;
-  grid-template-rows: 1fr 1fr 1fr;
-  gap: 18px;
+  grid-template-rows: auto auto auto;
+  gap: 16px;
   width: 100%;
-  padding: 4px 2px;
+  padding: 2px;
   --lm-b1: #5b8def;
   --lm-b2: var(--accent, #0052D9);
   --lm-b3: color-mix(in srgb, var(--accent, #0052D9) 60%, #1e293b);
@@ -269,7 +281,7 @@
   position: relative;
   display: grid;
   grid-template-columns: 88px 1fr;
-  grid-template-rows: 1fr;
+  grid-template-rows: auto;
   gap: 18px;
   min-height: 0;
 }
@@ -333,28 +345,28 @@
   background: var(--tier-c); flex-shrink: 0;
 }
 
-/* 三级内容：区域居中（水平 + 垂直），收紧留白 */
+/* 紧凑：chip 自然高度居中堆叠，克制留白，不拉伸不撑满 */
 .lc-body {
-  padding: 8px 10px;
+  padding: 14px 12px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 6px 8px;
-  align-content: center;     /* 整体纵向居中 */
-  justify-items: center;     /* 每个 item 在各自网格列里水平居中 */
+  gap: 10px 8px;
+  justify-items: center;
+  align-content: center;
   overflow: hidden;
 }
 
-/* item = 圆角 chip：淡色填充，内容居中，不再左对齐贴边 */
+/* item = 圆角 chip：克制固定字号（配合数据规范：短词/长项拆块/英文简写） */
 .lm-item {
-  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  padding: 5px 12px;
-  font-size: 13px; font-weight: 500; color: var(--text2);
-  line-height: 1.2; min-width: 0; max-width: 100%; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 8px 16px;
+  font-size: 15px; font-weight: 500; color: var(--text2);
+  line-height: 1.2; white-space: nowrap;
   border-radius: 999px;
   background: color-mix(in srgb, var(--text, #0f172a) 5%, transparent);
 }
-.lm-item .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lm-item.sm { font-size: 11.5px; gap: 6px; padding: 4px 9px; }
+.lm-item .nm { white-space: nowrap; }
+.lm-item.sm { font-size: 13px; gap: 6px; padding: 6px 12px; }
 
 /* 统一 logo 规范：圆形 + 淡环 + 白底 */
 .lm-logo {
