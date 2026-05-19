@@ -57,6 +57,23 @@
          img.src=src[k];
          el.append(img,s);
        });
+
+       // ── 同块等宽：每个卡片内 chip 宽 = 该块最宽 chip 宽。
+       //    【只统一宽度，绝不碰字号】（字号是 CSS 固定 15px，不截断的根基）。
+       //    logo 异步加载会改变 chip 宽，故 logo 全部就绪后再统一一次。
+       function equalize(){
+         document.querySelectorAll('#sN .lc-body, #sN .ls-body').forEach(box=>{
+           const chips=[...box.querySelectorAll(':scope > .lm-item')];
+           if(chips.length<2) return;
+           chips.forEach(c=>{ c.style.width='auto'; });
+           let mw=0; chips.forEach(c=>{ mw=Math.max(mw,c.getBoundingClientRect().width); });
+           const w=Math.min(mw, box.clientWidth);
+           chips.forEach(c=>{ c.style.width=w.toFixed(1)+'px'; });
+         });
+       }
+       equalize();                       // 先按当前（含色块/已缓存 logo）统一一次
+       window.addEventListener('load', equalize);   // 所有资源就绪后再统一
+       setTimeout(equalize, 2500);       // 兜底：在线 logo 陆续到位后再统一
      }
 
   ★★ 用本模板的必做步骤（漏了就退化成纯文字 / 截断 / 留白）：
@@ -134,7 +151,7 @@
       <div class="lm-col" style="--span:2;">
         <div class="lc-h">智能驾驶</div>
         <div class="lc-body">
-          <span class="lm-item" data-d="momenta.cn">Momenta</span>
+          <span class="lm-item" data-d="momenta.cn">魔门塔</span>
           <span class="lm-item" data-d="pony.ai">小马</span>
           <span class="lm-item" data-d="nio.com">蔚来</span>
         </div>

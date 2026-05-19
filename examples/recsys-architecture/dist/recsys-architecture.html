@@ -1189,12 +1189,35 @@ function initThemeSwitcher() {
 
 window.addEventListener('DOMContentLoaded', initThemeSwitcher);
 
-// 紧凑+居中方案：不追求铺满。chip 用克制的固定字号（配合已规范的短文案，
-// 不会截断），整图按内容自然高度、在 slide 中部垂直居中（CSS 的 margin:auto 0）。
-// 无逐卡极限计算、无 logo 异步重算 —— 简单确定，专业紧凑。
+// 同块等宽：每个卡片内所有 chip 宽度 = 该块最宽 chip 的宽。
+// 字号是 CSS 固定 15px，这里【只统一宽度，绝不碰字号】——不截断的根基不动。
 function initSlide1() {
-  // 数据已规范（每 chip 短词 / 长项已拆 / 英文简写），固定字号即可不截断。
-  // 此处留空：尺寸全部由 CSS 固定值控制，无需 JS 自适应。
+  const root = document.getElementById('s1');
+  if (!root) return;
+
+  function equalize(sel) {
+    root.querySelectorAll(sel).forEach((box) => {
+      const chips = [...box.querySelectorAll(':scope > .lm-item')];
+      if (chips.length < 2) return;
+      // 先清掉可能的旧固定宽，量自然宽
+      chips.forEach((c) => { c.style.width = 'auto'; });
+      let maxW = 0;
+      chips.forEach((c) => { maxW = Math.max(maxW, c.getBoundingClientRect().width); });
+      // 同块统一为最宽值（不超过该列可用宽，避免溢出）
+      const colCap = box.clientWidth;            // 单格容器宽，安全上限
+      const w = Math.min(maxW, colCap);
+      chips.forEach((c) => { c.style.width = w.toFixed(1) + 'px'; });
+    });
+  }
+
+  equalize('.lc-body');
+  equalize('.ls-body');
+
+  let raf;
+  window.addEventListener('resize', () => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => initSlide1());
+  });
 }
 </script>
 </body>
