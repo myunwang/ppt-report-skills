@@ -77,8 +77,11 @@
      }
 
   ★★ 用本模板的必做步骤（漏了就退化成纯文字 / 截断 / 留白）：
-     1. 本模板末尾的 <style> 块必须整体拆到 src/styles/slide-N.css
-        （build.py 只注入 src/styles/slide-N.css，不解析 slide 片段内嵌 <style>）。
+     1. 本模板末尾的「样式块」（文件尾部 STYLE 标签包裹的那段 CSS）必须整体
+        拆到 src/styles/slide-N.css（build.py 只注入 src/styles/slide-N.css，
+        不解析 slide 片段内嵌的样式块）。
+        ⚠ 注意：用正则提取样式块时，要匹配“文件最后一个”样式标签对，
+        不要匹配本注释里这句话——否则会把这段中文说明误当 CSS 提取。
      2. 上面整段 initSlideN()（仅 logo 注入）放进 src/scripts/slide-N.js。
         chip 尺寸是 CSS 固定值（font-size:15px / sm 13px），不靠 JS 自适应。
      3. ★ 内容规范（最关键，PPT 文案本就该如此，从源头杜绝截断）：
@@ -274,14 +277,15 @@
    ─ 精致：分类卡单层微阴影、发丝分隔线、统一圆形 logo
    关键结构铁律：每 tier 的 --span 合计必须 = 12，否则折行留白
 ══════════════════════════════════════════════════════════ */
-/* 不强求铺满：内容自然高度，在 slide 剩余空间垂直居中（紧凑+专业）。 */
+/* 占满 slide 剩余空间，三 tier 行纵向均匀分布（行间距自动拉开）。
+   chip 是固定尺寸（15px+JS 等宽），是「行间距变大」非 chip 变形——
+   既填满不留大白、又不挤在一起、内容也不变形。 */
 .diagram-landscape {
-  flex: 0 1 auto;
-  margin: auto 0;
+  flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-rows: auto auto auto;
-  gap: 16px;
+  grid-template-rows: 1fr 1fr 1fr;
+  align-content: stretch;
   width: 100%;
   padding: 2px;
   --lm-b1: #5b8def;

@@ -10,14 +10,14 @@
 /* 填满：tier 三等分占满 slide 中部高度；chip 在卡内竖直撑开（行距吸收空间）。
    字号固定跟设计稿（随整页 scale，不单独改 → 永不截断）。三 tier 等高对齐铁律保持。 */
 .diagram-landscape {
-  /* 不强求铺满：内容自然高度，在 slide 剩余空间里垂直居中（紧凑+专业）。
-     flex:1 容器里 margin:auto 0 = 上下等分剩余空间 → 整图居中。 */
-  flex: 0 1 auto;
-  margin: auto 0;
+  /* 占满 slide 剩余空间，三个 tier 行纵向均匀分布（行间距自动拉开）。
+     chip 是固定尺寸（15px+等宽），所以是「行间距变大」不是 chip 变形——
+     既填满不留大白、又不挤在一起、内容也不变形。 */
+  flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-rows: auto auto auto;   /* 各 tier 高 = 内容实际所需，不拉伸 */
-  gap: 16px;
+  grid-template-rows: 1fr 1fr 1fr;
+  align-content: stretch;
   width: 100%;
   padding: 2px;
   --lm-b1: #5b8def;
