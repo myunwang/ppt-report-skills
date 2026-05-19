@@ -99,25 +99,28 @@
   stroke-width: 2;
 }
 
-/* 三级内容：自然高度居中 + 适度留白，不拉伸 */
+/* 三级内容：区域居中（水平 + 垂直），收紧留白 */
 .lc-body {
-  padding: 10px 12px;
+  padding: 8px 10px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 4px 14px;
-  align-content: center;
+  gap: 6px 8px;
+  align-content: center;     /* 整体纵向居中 */
+  justify-items: center;     /* 每个 item 在各自网格列里水平居中 */
   overflow: hidden;
 }
 
+/* item = 圆角 chip：淡色填充，内容居中，不再左对齐贴边 */
 .lm-item {
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px 4px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 5px 12px;
   font-size: 13px; font-weight: 500; color: var(--text2);
-  line-height: 1.2; min-width: 0; overflow: hidden;
-  border-radius: 6px;
+  line-height: 1.2; min-width: 0; max-width: 100%; overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text, #0f172a) 5%, transparent);
 }
 .lm-item .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lm-item.sm { font-size: 11.5px; gap: 6px; padding: 5px 3px; }
+.lm-item.sm { font-size: 11.5px; gap: 6px; padding: 4px 9px; }
 
 /* 统一 logo 规范：圆形 + 淡环 + 白底 */
 .lm-logo {
@@ -160,8 +163,9 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .ls-body {
-  display: flex; flex-direction: column; justify-content: center;
-  gap: 2px; padding: 2px 7px 8px;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;   /* 嵌套小格也区域居中 */
+  gap: 3px; padding: 2px 6px 7px;
   min-height: 0; overflow: hidden;
 }
 .ls-body .lm-item.sm { flex: 0 1 auto; min-height: 0; }
@@ -170,5 +174,5 @@
 [data-theme="dark-tech"] .diagram-landscape { --lm-hair: rgba(255,255,255,0.10); }
 [data-theme="dark-tech"] .lm-col,
 [data-theme="dark-tech"] .ls-cell { background: rgba(255,255,255,0.025); }
-[data-theme="dark-tech"] .lm-item { color: var(--text2); }
+[data-theme="dark-tech"] .lm-item { color: var(--text2); background: rgba(255,255,255,0.06); }
 [data-theme="dark-tech"] .lc-sub { background: rgba(255,255,255,0.08); }
