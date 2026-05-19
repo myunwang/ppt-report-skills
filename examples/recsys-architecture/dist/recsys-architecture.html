@@ -510,13 +510,14 @@ html, body {
 /* 填满：tier 三等分占满 slide 中部高度；chip 在卡内竖直撑开（行距吸收空间）。
    字号固定跟设计稿（随整页 scale，不单独改 → 永不截断）。三 tier 等高对齐铁律保持。 */
 .diagram-landscape {
-  /* 占满 slide 剩余空间，三个 tier 行纵向均匀分布（行间距自动拉开）。
-     chip 是固定尺寸（15px+等宽），所以是「行间距变大」不是 chip 变形——
-     既填满不留大白、又不挤在一起、内容也不变形。 */
+  /* 占满 slide 剩余空间，三个 tier 行三等分撑满 + 固定 row-gap 间隔。
+     chip 是固定尺寸（15px+等宽），不变形；分隔虚线靠 --tier-gap 精准定位。 */
+  --tier-gap: 22px;
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
   grid-template-rows: 1fr 1fr 1fr;
+  row-gap: var(--tier-gap);
   align-content: stretch;
   width: 100%;
   padding: 2px;
@@ -544,7 +545,8 @@ html, body {
   content: "";
   position: absolute;
   left: 0; right: 0;
-  margin-top: -10px;
+  /* 精准落在两 tier 之间 row-gap 的中央：本行顶往上半个 gap */
+  top: calc(-1 * var(--tier-gap, 22px) / 2);
   border-top: 1px dashed var(--lm-hair);
 }
 
@@ -1189,29 +1191,35 @@ function initThemeSwitcher() {
 
 window.addEventListener('DOMContentLoaded', initThemeSwitcher);
 
-// 同块等宽：每个卡片内所有 chip 宽度 = 该块最宽 chip 的宽。
-// 字号是 CSS 固定 15px，这里【只统一宽度，绝不碰字号】——不截断的根基不动。
+// 全页 chip 统一同宽：所有 .lc-body 的 chip 取同一个宽（全页最宽，
+// 但不超过最窄那一列的可用宽，保证不溢出）；.ls-body 嵌套小格因尺度更小，
+// 单独取一组统一宽。字号是 CSS 固定 15px，这里【只统一宽度，绝不碰字号】。
 function initSlide1() {
   const root = document.getElementById('s1');
   if (!root) return;
 
   function equalize(sel) {
-    root.querySelectorAll(sel).forEach((box) => {
+    const boxes = [...root.querySelectorAll(sel)];
+    const allChips = [];
+    let minColCap = Infinity;
+    boxes.forEach((box) => {
       const chips = [...box.querySelectorAll(':scope > .lm-item')];
-      if (chips.length < 2) return;
-      // 先清掉可能的旧固定宽，量自然宽
-      chips.forEach((c) => { c.style.width = 'auto'; });
-      let maxW = 0;
-      chips.forEach((c) => { maxW = Math.max(maxW, c.getBoundingClientRect().width); });
-      // 同块统一为最宽值（不超过该列可用宽，避免溢出）
-      const colCap = box.clientWidth;            // 单格容器宽，安全上限
-      const w = Math.min(maxW, colCap);
-      chips.forEach((c) => { c.style.width = w.toFixed(1) + 'px'; });
+      if (!chips.length) return;
+      chips.forEach((c) => { c.style.width = 'auto'; });   // 先复位量自然宽
+      allChips.push(...chips);
+      minColCap = Math.min(minColCap, box.clientWidth);     // 最窄列的安全上限
     });
+    if (!allChips.length) return;
+    // 全页最宽 chip 的自然宽
+    let maxW = 0;
+    allChips.forEach((c) => { maxW = Math.max(maxW, c.getBoundingClientRect().width); });
+    // 统一宽 = 全页最宽，但不超过最窄列可用宽（否则窄列会溢出）
+    const w = Math.min(maxW, minColCap);
+    allChips.forEach((c) => { c.style.width = w.toFixed(1) + 'px'; });
   }
 
-  equalize('.lc-body');
-  equalize('.ls-body');
+  equalize('.lc-body');   // 主层：全页统一一个宽
+  equalize('.ls-body');   // 嵌套小格：单独统一一个宽（尺度更小）
 
   let raf;
   window.addEventListener('resize', () => {

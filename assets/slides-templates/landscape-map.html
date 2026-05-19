@@ -61,16 +61,21 @@
        // ── 同块等宽：每个卡片内 chip 宽 = 该块最宽 chip 宽。
        //    【只统一宽度，绝不碰字号】（字号是 CSS 固定 15px，不截断的根基）。
        //    logo 异步加载会改变 chip 宽，故 logo 全部就绪后再统一一次。
-       function equalize(){
-         document.querySelectorAll('#sN .lc-body, #sN .ls-body').forEach(box=>{
-           const chips=[...box.querySelectorAll(':scope > .lm-item')];
-           if(chips.length<2) return;
-           chips.forEach(c=>{ c.style.width='auto'; });
-           let mw=0; chips.forEach(c=>{ mw=Math.max(mw,c.getBoundingClientRect().width); });
-           const w=Math.min(mw, box.clientWidth);
-           chips.forEach(c=>{ c.style.width=w.toFixed(1)+'px'; });
+       function eqGroup(sel){
+         const boxes=[...document.querySelectorAll(sel)];
+         const all=[]; let minCap=Infinity;
+         boxes.forEach(box=>{
+           const cs=[...box.querySelectorAll(':scope > .lm-item')];
+           if(!cs.length) return;
+           cs.forEach(c=>{ c.style.width='auto'; });
+           all.push(...cs); minCap=Math.min(minCap,box.clientWidth);
          });
+         if(!all.length) return;
+         let mw=0; all.forEach(c=>{ mw=Math.max(mw,c.getBoundingClientRect().width); });
+         const w=Math.min(mw,minCap);   // 全页统一宽，不超最窄列
+         all.forEach(c=>{ c.style.width=w.toFixed(1)+'px'; });
        }
+       function equalize(){ eqGroup('#sN .lc-body'); eqGroup('#sN .ls-body'); }
        equalize();                       // 先按当前（含色块/已缓存 logo）统一一次
        window.addEventListener('load', equalize);   // 所有资源就绪后再统一
        setTimeout(equalize, 2500);       // 兜底：在线 logo 陆续到位后再统一
@@ -281,10 +286,12 @@
    chip 是固定尺寸（15px+JS 等宽），是「行间距变大」非 chip 变形——
    既填满不留大白、又不挤在一起、内容也不变形。 */
 .diagram-landscape {
+  --tier-gap: 22px;
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
   grid-template-rows: 1fr 1fr 1fr;
+  row-gap: var(--tier-gap);
   align-content: stretch;
   width: 100%;
   padding: 2px;
@@ -312,7 +319,7 @@
   content: "";
   position: absolute;
   left: 0; right: 0;
-  margin-top: -10px;
+  top: calc(-1 * var(--tier-gap, 22px) / 2);
   border-top: 1px dashed var(--lm-hair);
 }
 
