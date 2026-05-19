@@ -132,6 +132,7 @@ python3 export_pdf.py       # （可选）导出 PDF（自动找 dist/，输出 
 - [`references/chart-mapping.md`](references/chart-mapping.md) — 数据形态 ↔ 图表选型决策表（ECharts 配置范本）
 - [`references/components.md`](references/components.md) — 通用组件库（KPI / 卡片 / Phase / Timeline / Mini-bar / Metric-row）
 - [`references/themes.md`](references/themes.md) — 5 套预设主题 + 自定义主题方法
+- [`references/landscape-qa.md`](references/landscape-qa.md) — landscape-map / 结构图类页面生成后的质量自检与优化清单（踩坑黑名单 · 数据规范 · 渲染自检 · LLM 二次复查），生成此类页面后**逐条对照**
 
 ## 资产清单
 
