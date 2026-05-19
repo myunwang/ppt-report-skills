@@ -13,6 +13,9 @@ venv/
 .idea/
 *.swp
 
+# Claude Code 运行时（调度锁等本地产物）
+.claude/
+
 # build 产物（如果用户在仓库内 build）
 dist/
 *.html.bak
