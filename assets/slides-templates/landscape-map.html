@@ -274,17 +274,29 @@
         <div class="lc-sub">
           <div class="ls-cell"><div class="ls-h">金融</div><div class="ls-body">
             <span class="lm-item sm" data-d="icbc.com.cn">工行</span>
-            <span class="lm-item sm" data-d="pingan.com">平安</span></div></div>
+            <span class="lm-item sm" data-d="pingan.com">平安</span>
+            <span class="lm-item sm" data-d="cmbchina.com">招行</span>
+            <span class="lm-item sm" data-d="ant.com">蚂蚁</span></div></div>
           <div class="ls-cell"><div class="ls-h">安防</div><div class="ls-body">
             <span class="lm-item sm" data-d="hikvision.com">海康</span>
-            <span class="lm-item sm" data-d="dahuatech.com">大华</span></div></div>
+            <span class="lm-item sm" data-d="dahuatech.com">大华</span>
+            <span class="lm-item sm" data-d="uniview.com">宇视</span>
+            <span class="lm-item sm" data-d="tiandy.com">天地伟业</span></div></div>
           <div class="ls-cell"><div class="ls-h">医疗</div><div class="ls-body">
-            <span class="lm-item sm" data-d="airdoc.com">Airdoc</span></div></div>
+            <span class="lm-item sm" data-d="airdoc.com">鹰瞳</span>
+            <span class="lm-item sm" data-d="united-imaging.com">联影</span>
+            <span class="lm-item sm" data-d="mindray.com">迈瑞</span>
+            <span class="lm-item sm" data-d="infervision.com">推想</span></div></div>
           <div class="ls-cell"><div class="ls-h">教育</div><div class="ls-body">
-            <span class="lm-item sm" data-d="100tal.com">好未来</span></div></div>
+            <span class="lm-item sm" data-d="100tal.com">好未来</span>
+            <span class="lm-item sm" data-d="koolearn.com">新东方</span>
+            <span class="lm-item sm" data-d="yuanfudao.com">猿辅导</span>
+            <span class="lm-item sm" data-d="zuoyebang.com">作业帮</span></div></div>
           <div class="ls-cell"><div class="ls-h">电商</div><div class="ls-body">
             <span class="lm-item sm" data-d="alibaba.com">阿里</span>
-            <span class="lm-item sm" data-d="jd.com">京东</span></div></div>
+            <span class="lm-item sm" data-d="jd.com">京东</span>
+            <span class="lm-item sm" data-d="pinduoduo.com">拼多多</span>
+            <span class="lm-item sm" data-d="meituan.com">美团</span></div></div>
         </div>
       </div>
     </div>
@@ -544,10 +556,11 @@
 .ls-body {
   display: flex; flex-direction: column;
   justify-content: center; align-items: center;   /* 嵌套小格也区域居中 */
-  gap: 3px; padding: 2px 6px 7px;
+  gap: 4px;
+  padding: 4px 12px 8px;                          /* 左右 padding 加大，chip 不贴边 */
   min-height: 0; overflow: hidden;
 }
-.ls-body .lm-item.sm { flex: 0 1 auto; min-height: 0; }
+.ls-body .lm-item.sm { flex: 0 1 auto; min-height: 0; max-width: calc(100% - 4px); }
 
 /* dark 主题适配 */
 [data-theme="dark-tech"] .diagram-landscape { --lm-hair: rgba(255,255,255,0.10); }
