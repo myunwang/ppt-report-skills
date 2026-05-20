@@ -1198,6 +1198,20 @@ function initSlide1() {
   const root = document.getElementById('s1');
   if (!root) return;
 
+  // 动态列数：chip 数 ≤ 3 且卡片本身较窄（--span < 4）→ 单列；其他保持 2 列。
+  // 解决"3 chip 在窄卡里 2 列布局第二列空挂"的问题。
+  function setColumns() {
+    root.querySelectorAll('.lc-body').forEach((body) => {
+      const chips = body.querySelectorAll(':scope > .lm-item').length;
+      if (!chips) return;
+      const col = body.closest('.lm-col');
+      const span = parseInt((col && col.style.getPropertyValue('--span')) || '3', 10);
+      const cols = (chips <= 3 && span < 4) ? 1 : 2;
+      body.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    });
+  }
+  setColumns();
+
   function equalize(sel) {
     const boxes = [...root.querySelectorAll(sel)];
     const allChips = [];

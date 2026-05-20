@@ -75,7 +75,19 @@
          const w=Math.min(mw,minCap);   // 全页统一宽，不超最窄列
          all.forEach(c=>{ c.style.width=w.toFixed(1)+'px'; });
        }
-       function equalize(){ eqGroup('#sN .lc-body'); eqGroup('#sN .ls-body'); }
+       // 动态列数：chip 数 ≤ 3 且卡片本身窄（--span<4）→ 单列；其他保持 2 列。
+       // 解决"3 chip 在窄卡里 2 列布局第二列空挂"的问题。
+       function setColumns(){
+         document.querySelectorAll('#sN .lc-body').forEach(body=>{
+           const chips=body.querySelectorAll(':scope > .lm-item').length;
+           if(!chips) return;
+           const col=body.closest('.lm-col');
+           const span=parseInt((col&&col.style.getPropertyValue('--span'))||'3',10);
+           const cols=(chips<=3 && span<4)?1:2;
+           body.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+         });
+       }
+       function equalize(){ setColumns(); eqGroup('#sN .lc-body'); eqGroup('#sN .ls-body'); }
        equalize();                       // 先按当前（含色块/已缓存 logo）统一一次
        window.addEventListener('load', equalize);   // 所有资源就绪后再统一
        setTimeout(equalize, 2500);       // 兜底：在线 logo 陆续到位后再统一
