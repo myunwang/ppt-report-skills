@@ -36,8 +36,24 @@
 
 7. **绝不死板 2 列布局**。chip 数 ≤ 3 且 `--span < 4` 的窄卡用 2 列会出现
    "第二列挂空 / 单 chip 单独成行 / 整卡显空"的难看效果。**JS 按 chip 数
-   + span 动态设列数**：`(chips ≤ 3 && span < 4) ? 1 列 : 2 列`。
-   宽列卡（如 `--span:4+`）即使少 chip 也保持 2 列（列宽够大）。
+   + span 综合判断列数**：`span<3 → 强制单列（再多 chip 也单列纵排）`，
+   `span=3 时 chip≤3 单列 / chip≥4 两列`，`span≥4 → 两列`。
+   宽列卡即使少 chip 也保持 2 列（列宽够大）；窄卡即使 4 chip 也单列纵排
+   （让卡片变高纵向纳容，比横向硬塞更好看）。
+
+8. **绝不死板"三 tier 等高"**。tier 内"最大单卡所需行数"差异大时（如 tier 1
+   有 4 chip 单列卡 = 5 行，tier 2 多是 2 行卡），用 `1fr 1fr 1fr` 等分
+   会让有 4 chip 卡的 tier 行高不够而压缩。**JS 按各 tier 最大单卡行数
+   动态分配 `grid-template-rows` 权重**（如 `5fr 3fr 3fr`），内容多的 tier
+   自动变高，少的变矮。整体仍撑满 diagram，且同 tier 内卡片等高的铁律不破。
+
+9. **绝不死板 HTML 写死的 `--span:N`**。同一 tier 内各卡内容量差异大时
+   （如 tier 1 智能家居 4 chip vs 智能驾驶 3 chip），**JS 按各卡 chip 数
+   动态重新分配 span**（合计仍 == 12）：嵌套卡保持原 span 锁定；普通卡
+   按 chip 数权重分配。**关键约束**：每卡有"最小 span"（chip≤3 → ≥2，
+   chip≥4 → ≥3），防止压缩过度反而装不下。
+   核心思路（来自用户洞察）：**视觉舒服的关键是"内容密度分布均匀"，
+   不是几何尺寸完全相等** —— 不出现"一卡 4 个、邻卡 1 个"的反差就行。
 
 ## 二、数据规范清单（生成前 / 生成中执行 —— 从源头杜绝问题）
 
@@ -77,6 +93,14 @@ PPT 文案本就不该超长。截断的根治在数据层，不在渲染层：
       应是**单列纵排**，不能是 2 列布局留第二列挂空。`initSlideN` 里的
       `setColumns()` 负责按 chip 数 + span 动态设 `gridTemplateColumns`。
       量每张 `.lc-body` 的 `gridTemplateColumns.split(' ').length` 应符合预期。
+- [ ] **动态 span 自检**：同 tier 各卡 chip 数差异大时，HTML 写死的 `--span`
+      应被 JS 重分（`redistributeSpans()`）。同 tier span 合计仍 == 12，
+      多 chip 卡得到更大 span 而非被压窄。
+- [ ] **动态 tier 高度自检**：`.diagram-landscape` 的 `gridTemplateRows`
+      不应是 `1fr 1fr 1fr`，而是按各 tier 最大单卡行数加权（如 `5fr 3fr 3fr`）。
+      内容多的 tier 应明显高于内容少的 tier。
+- [ ] **窄卡含 4+ chip 应纵向变高**：例如 `--span:2` 的卡有 4 chip 时，应
+      单列纵排（卡变高 4 行），不能 2 列横塞导致 chip 超出列宽被裁。
 
 ## 四、LLM 二次复查流程（自检发现问题时）
 

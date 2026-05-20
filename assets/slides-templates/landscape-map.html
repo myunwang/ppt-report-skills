@@ -75,19 +75,112 @@
          const w=Math.min(mw,minCap);   // 全页统一宽，不超最窄列
          all.forEach(c=>{ c.style.width=w.toFixed(1)+'px'; });
        }
-       // 动态列数：chip 数 ≤ 3 且卡片本身窄（--span<4）→ 单列；其他保持 2 列。
-       // 解决"3 chip 在窄卡里 2 列布局第二列空挂"的问题。
+       // 动态重分 span：每个 tier 内按各卡内容需求重分配 --span（合计仍 ==12）。
+       // 让多 chip 的卡变宽（容得下不超界），少 chip 的窄卡更窄（节省空间）。
+       // 嵌套卡（.lm-col.nest）span 保持 HTML 原值不动（结构有特殊布局）。
+       function redistributeSpans(){
+         document.querySelectorAll('#sN .lm-row').forEach(row=>{
+           const cols=[...row.querySelectorAll(':scope > .lm-cols > .lm-col')];
+           if(cols.length<2) return;
+           // 算每卡需求权重：嵌套卡用 HTML 原 span 作权重（不参与重分配）；
+           // 普通卡：2 chip→1.0 / 3 chip→1.2 / 4 chip→1.8 / 5 chip→2.0
+           const orig=cols.map(c=>parseInt(c.style.getPropertyValue('--span')||'3',10));
+           const sum=orig.reduce((a,b)=>a+b,0);   // 应 ==12
+           // 每卡需求权重 + 最小 span 约束（防压过度，保证 chip 装得下）
+           const minSpans=cols.map((c,i)=>{
+             if(c.classList.contains('nest')) return orig[i];   // 嵌套锁定原值
+             const chips=c.querySelectorAll('.lc-body > .lm-item').length;
+             // chip 数 → 最小 span（含 logo 的 chip 实测所需）:
+             //   1-2 chip→2 (≥150px 能放 logo+文字)
+             //   3 chip→2 (单列纵排,215px 够)
+             //   4+ chip→3 (2 列布局,需 ≥315px)
+             return chips<=3?2 : 3;
+           });
+           const weights=cols.map((c,i)=>{
+             if(c.classList.contains('nest')) return orig[i];
+             const chips=c.querySelectorAll('.lc-body > .lm-item').length;
+             return chips<=2?1.0 : chips===3?1.4 : chips===4?2.0 : 2.4;
+           });
+           // 嵌套卡总 span 锁定 → 普通卡按权重瓜分剩余 span，且各自 ≥ minSpans
+           const nestSum=cols.reduce((s,c,i)=>s+(c.classList.contains('nest')?orig[i]:0),0);
+           const remain=sum-nestSum;
+           const nonNestIdx=cols.map((c,i)=>i).filter(i=>!cols[i].classList.contains('nest'));
+           const minTotal=nonNestIdx.reduce((s,i)=>s+minSpans[i],0);
+           // 极端情况：最小总和已超过 remain → 回退原 span（不重分）
+           if(minTotal>remain){ return; }
+           // 先给每卡分配最小 span，剩余按权重分配
+           const newSpans=orig.slice();
+           nonNestIdx.forEach(i=>newSpans[i]=minSpans[i]);
+           let extra=remain-minTotal;
+           const wSum=nonNestIdx.reduce((s,i)=>s+weights[i],0);
+           let assigned=0;
+           nonNestIdx.forEach(i=>{ const add=Math.floor(extra*weights[i]/wSum); newSpans[i]+=add; assigned+=add; });
+           let diff=extra-assigned;   // 余数（最小已发,只算 extra 的找零）
+           // 余数依次补给权重最大的非嵌套卡
+           const sortedByW=nonNestIdx.slice().sort((a,b)=>weights[b]-weights[a]);
+           let k=0;
+           while(diff>0 && sortedByW.length){ newSpans[sortedByW[k%sortedByW.length]]++; diff--; k++; }
+           while(diff<0 && sortedByW.length){
+             const idx=sortedByW[(sortedByW.length-1-k%sortedByW.length)];
+             if(newSpans[idx]>minSpans[idx]){ newSpans[idx]--; diff++; }  // 不低于最小 span
+             k++;
+             if(k>20) break;
+           }
+           // 应用
+           cols.forEach((c,i)=>c.style.setProperty('--span',newSpans[i]));
+         });
+       }
+
+       // 动态 tier 高度：按各 tier 内"最大单卡所需行数"加权分配 grid 行高，
+       // 不再死板 1fr 1fr 1fr。内容多的 tier 自动变高（让智能家居 4 chip 装得下），
+       // 内容少的 tier 变矮（不浪费空间）。整体仍撑满 .diagram-landscape。
+       function redistributeTierHeights(){
+         const dia=document.querySelector('#sN .diagram-landscape'); if(!dia) return;
+         const rows=[...dia.querySelectorAll(':scope > .lm-row')];
+         if(rows.length<2) return;
+         // 每 tier 的"行需求权重":
+         //   - 非嵌套卡：取该 tier 内最大 chip 数（按列数算实际行数）
+         //   - 嵌套卡：按 ls-cell 内最大 chip 数
+         const weights=rows.map(row=>{
+           let maxRows=2;   // 最小保 2 行
+           row.querySelectorAll(':scope > .lm-cols > .lm-col').forEach(col=>{
+             if(col.classList.contains('nest')){
+               col.querySelectorAll('.ls-cell').forEach(cell=>{
+                 const n=cell.querySelectorAll('.lm-item').length;
+                 maxRows=Math.max(maxRows, n+1);   // +1 给 ls-h 标签行
+               });
+             } else {
+               const n=col.querySelectorAll('.lc-body > .lm-item').length;
+               const sp=parseInt(col.style.getPropertyValue('--span')||'3',10);
+               // 与 setColumns 同逻辑：span<3 单列；span=3 时 chip≤3 单列；span≥4 二列
+               const cols=(sp<3)?1 : (sp===3?(n<=3?1:2):2);
+               maxRows=Math.max(maxRows, Math.ceil(n/cols)+1);   // +1 给 lc-h 标题行
+             }
+           });
+           return maxRows;
+         });
+         dia.style.gridTemplateRows=weights.map(w=>`${w}fr`).join(' ');
+       }
+
+       // 动态列数：综合判断 chip 数 + 卡片 span：
+       //   span<3（很窄）→ 不论 chip 多少都单列（横向放不下两列+logo）
+       //   span=3 + chip≤3 → 单列；chip≥4 → 2 列
+       //   span≥4（宽） → 2 列
+       // 配合 redistributeTierHeights：单列时卡变高，纵向纳容更多 chip。
        function setColumns(){
          document.querySelectorAll('#sN .lc-body').forEach(body=>{
            const chips=body.querySelectorAll(':scope > .lm-item').length;
            if(!chips) return;
            const col=body.closest('.lm-col');
            const span=parseInt((col&&col.style.getPropertyValue('--span'))||'3',10);
-           const cols=(chips<=3 && span<4)?1:2;
+           let cols;
+           if(span<3) cols=1;                            // 窄卡强制单列
+           else if(span===3) cols=(chips<=3?1:2);
+           else cols=2;                                  // span≥4 二列
            body.style.gridTemplateColumns=`repeat(${cols},1fr)`;
          });
        }
-       function equalize(){ setColumns(); eqGroup('#sN .lc-body'); eqGroup('#sN .ls-body'); }
+       function equalize(){ redistributeSpans(); redistributeTierHeights(); setColumns(); eqGroup('#sN .lc-body'); eqGroup('#sN .ls-body'); }
        equalize();                       // 先按当前（含色块/已缓存 logo）统一一次
        window.addEventListener('load', equalize);   // 所有资源就绪后再统一
        setTimeout(equalize, 2500);       // 兜底：在线 logo 陆续到位后再统一
