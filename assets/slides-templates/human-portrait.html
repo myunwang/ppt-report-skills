@@ -76,35 +76,30 @@
         <div class="hp-tag-meta">{解释}</div>
       </div>
 
-      <!-- ═══ 中央人体 SVG (viewBox 72×80,OpenMoji 原坐标系) ═══ -->
-      <svg class="hp-svg" viewBox="0 0 72 80" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-        <!-- 引线(可选,在最底层) -->
-        <g stroke="var(--accent)" stroke-width="0.35" stroke-dasharray="1.2,1.2" fill="none" opacity="0.45">
-          <path d="M 6 11 Q 22 11 33 11" />
-          <path d="M 6 28 Q 22 25 31 25" />
-          <path d="M 6 60 Q 22 60 33 62" />
-          <path d="M 66 38 Q 50 38 44 38" />
-          <path d="M 66 60 Q 50 60 38 62" />
+      <!-- ═══ 中央人体 SVG (剪影版 v2,viewBox 210×297) ═══
+           剪影 path 来自 Wikimedia Commons CC0:Silhouette_of_a_standing_man.svg
+           注意:path 太长(8.9K),建议抽到 common.js 作为共享常量,JS 注入 -->
+      <svg class="hp-svg silhouette-host" viewBox="0 0 210 297" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <!-- 引线(可选,在最底层;站立男坐标系) -->
+        <g stroke="var(--accent)" stroke-width="0.8" stroke-dasharray="3,3" fill="none" opacity="0.50">
+          <path d="M 0 35 Q 40 35 70 38" />     <!-- 头 ← 左 -->
+          <path d="M 0 130 Q 40 130 60 130" />  <!-- 心 ← 左中 -->
+          <path d="M 0 240 Q 40 240 75 240" />  <!-- 左腿 ← 左下 -->
+          <path d="M 210 100 Q 170 100 150 100" /> <!-- 右肩 ← 右上 -->
+          <path d="M 210 240 Q 170 240 135 240" /> <!-- 右腿 ← 右下 -->
         </g>
 
-        <!-- 部位高亮(在人体下面,fill-opacity 0.15-0.35) -->
+        <!-- 部位高亮(在剪影下面!) — 坐标参考 OpenAI deck slide-11/13/14 -->
         <g>
-          <circle cx="35.4" cy="10.65" r="8"   fill="#3b82f6" fill-opacity="0.18"/>  <!-- 头 -->
-          <circle cx="35.4" cy="25"    r="6.5" fill="#10b981" fill-opacity="0.20"/>  <!-- 心 -->
-          <circle cx="44.3" cy="38"    r="3.5" fill="#f59e0b" fill-opacity="0.32"/>  <!-- 右手 -->
-          <circle cx="33.4" cy="62"    r="3.5" fill="#8b5cf6" fill-opacity="0.28"/>  <!-- 左脚 -->
-          <circle cx="37.4" cy="62"    r="3.5" fill="#ec4899" fill-opacity="0.28"/>  <!-- 右脚 -->
+          <circle cx="105" cy="40" r="35" fill="#3b82f6" fill-opacity="0.30"/>                <!-- 头 -->
+          <ellipse cx="105" cy="125" rx="48" ry="35" fill="#10b981" fill-opacity="0.25"/>     <!-- 胸 -->
+          <circle cx="155" cy="100" r="20" fill="#f59e0b" fill-opacity="0.35"/>               <!-- 右肩/手 -->
+          <ellipse cx="80" cy="240" rx="20" ry="40" fill="#8b5cf6" fill-opacity="0.28"/>      <!-- 左腿 -->
+          <ellipse cx="130" cy="240" rx="20" ry="40" fill="#ec4899" fill-opacity="0.28"/>     <!-- 右腿 -->
         </g>
 
-        <!-- OpenMoji 1F9CD 人体(原坐标,直接 inline) -->
-        <circle cx="35.4039" cy="10.6511" r="2.969"
-                fill="none" stroke="#0f172a" stroke-width="1.6"/>
-        <path fill="none" stroke="#0f172a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
-          d="M40.37,23.5891l1.9,38c.055,1.1-.575,2-1.4,2a2.076,2.076,0,0,1-1.729-1.987l-2.542-22.031c-.129-1.093-.679-1.987-1.229-1.987s-1.103.894-1.229,1.987l-2.539,22.031a2.076,2.076,0,0,1-1.729,1.987c-.825,0-1.455-.9-1.4-2l1.9-38"/>
-        <path fill="none" stroke="#0f172a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
-          d="M26.3729,41.5891l.792-19a5.274,5.274,0,0,1,5.208-5h6"/>
-        <path fill="none" stroke="#0f172a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
-          d="M38.3,17.589a5.274,5.274,0,0,1,5.208,5l.792,19"/>
+        <!-- 剪影 path 由 JS 注入:initSlideN() 调用 injectSilhouette(svg, color, opacity) -->
+        <!-- common.js 须有:window.SILHOUETTE_MAN_PATH + window.injectSilhouette() -->
       </svg>
     </div>
 

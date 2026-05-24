@@ -104,7 +104,18 @@ LLM 默认画 SVG 的 3 个致命毛病:
 - AI 拼头 + 身 + 四肢的多 path 写法,**头颈过渡永远会留缝隙**(头悬在脖颈上方像戴小帽子)
 - 自己定关键点坐标 → 比例失调 → 整体比例像变形儿童画
 
-**正确做法:** 直接从 **OpenMoji**(7 万设计师社区 / GitHub:hfg-gmuend/openmoji)抓现成的 SVG path,然后改 color/scale。
+**正确做法 — 两个素材来源,按"档次"选:**
+
+| 档次 | 用途 | 来源 | 风格 |
+|---|---|---|---|
+| 🥉 **火柴人级** | 团队 pictogram(多人 / N×100) · 信息密度优先 | OpenMoji 1F9CD | 线条 / 简洁 / 可识别 |
+| 🥇 **剪影级** ⭐ | 用户画像 / 能力地图 / 风险热图 · 视觉冲击力优先 | Wikimedia Commons 单 path 剪影 | 实心剪影 / 专业 / 咨询报告标杆感 |
+
+**剪影级是 PPT 标杆级别**(像麦肯锡 / BCG 报告里那种站立人剪影 + 周边气泡标签的页型) —
+火柴人在 1:1 比例下显得"卡通可爱",一旦放大成主体就立刻显得**业余 / 丑萌**。
+若整张页面只有 1 个人体做主角,**必须用剪影级**;若是多人 pictogram(N 个 100 人小图标)火柴人才合适。
+
+### 火柴人版本(OpenMoji 1F9CD)
 
 ```bash
 # 抓 OpenMoji 黑白线条版的某个 emoji(改 unicode 即可)
@@ -138,6 +149,75 @@ curl -fsSL "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/black/s
 ```
 
 **变色版(实心剪影):** 不写新 path,只把上面 OpenMoji 的所有 `stroke="#0f172a"` 改成你要的颜色,`stroke-width` 加大到 8 → 自动变成实心剪影。
+
+### 剪影版本(Wikimedia Commons 标杆级)⭐
+
+> **何时用:** 整页主体是单个人体作主角(用户画像 / 拟人化能力 / 风险热图)时,**必须用剪影**。
+> 火柴人放大后会立刻显业余。
+> 实战教训:OpenAI deck 第一版用火柴人,用户反馈"丑萌";换成剪影后视觉档次直接咨询报告级。
+
+**下载剪影**(Wikimedia Commons,CC0 / 公共域):
+
+```bash
+# 站立男(细线条 8K,推荐:姿态自然,双手下垂)
+curl -fsSL -A "Mozilla/5.0" "https://upload.wikimedia.org/wikipedia/commons/8/8e/Silhouette_of_a_standing_man.svg" -o silhouette-man.svg
+
+# 通用人体(医学解剖图风,正面对称)
+curl -fsSL -A "Mozilla/5.0" "https://upload.wikimedia.org/wikipedia/commons/8/89/SVG_Human_Silhouette.svg" -o silhouette-body.svg
+```
+
+**剪影 SVG 结构(单 path,直接 inline):**
+
+```svg
+<svg viewBox="0 0 210 297" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+  <!-- 部位高亮(在剪影下面!) -->
+  <circle cx="105" cy="40" r="35" fill="#3b82f6" fill-opacity="0.30"/>     <!-- 头 -->
+  <ellipse cx="105" cy="150" rx="50" ry="40" fill="#10b981" fill-opacity="0.25"/>  <!-- 胸/心 -->
+  <circle cx="55" cy="170" r="22" fill="#f59e0b" fill-opacity="0.40"/>     <!-- 左手 -->
+  <circle cx="155" cy="170" r="22" fill="#f59e0b" fill-opacity="0.40"/>    <!-- 右手 -->
+  <ellipse cx="105" cy="260" rx="40" ry="30" fill="#8b5cf6" fill-opacity="0.30"/>  <!-- 腿 -->
+
+  <!-- 剪影 path(用 Wikimedia 下载,长达 8K 字符,这里省略 d 内容) -->
+  <path fill="#0f172a" d="..."/>
+</svg>
+```
+
+**剪影坐标系(站立男 210×297):**
+
+| 部位 | 坐标 | 高亮圆建议大小 |
+|---|---|---|
+| 头 | (105, 40) | r=35 |
+| 颈 | (105, 65) | r=12 |
+| 胸 / 心 | (105, 105) | rx=45 ry=30 |
+| 腰 | (105, 150) | rx=40 ry=25 |
+| 左手 | (55, 170) | r=22 |
+| 右手 | (155, 170) | r=22 |
+| 大腿 | (105, 215) | rx=50 ry=35 |
+| 小腿 | (105, 260) | rx=40 ry=30 |
+| 脚 | (88, 280) / (122, 280) | r=12 |
+
+**path 太长?抽到 JS 共享:**
+
+8K 的 path 字符串,若 N 个 slide 都用,**抽到 `common.js` 作为常量** + JS 注入:
+
+```js
+// common.js
+window.SILHOUETTE_MAN = `M 79 284 c -0.3 ...`;
+window.injectSilhouette = (svg, color = '#0f172a', opacity = 1) => {
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p.setAttribute('d', window.SILHOUETTE_MAN);
+  p.setAttribute('fill', color);
+  p.setAttribute('fill-opacity', opacity);
+  svg.appendChild(p);
+};
+
+// slide-N.js
+initSlide11 = () => {
+  document.querySelectorAll('#s11 .silhouette-svg').forEach(svg => {
+    injectSilhouette(svg);
+  });
+};
+```
 
 ## 四、画人体轮廓的具体范式(若必须自己写)
 
