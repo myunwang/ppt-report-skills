@@ -1,0 +1,233 @@
+<!--
+  TEMPLATE · human-portrait (人体画像 / 拟人化能力图 / 部位热力图)
+  用途:把"对象画像 / 能力拟人 / 风险热图 / 团队 pictogram" 等
+        需要「中央人体形象 + 周边标签 + 部位高亮」的页型
+  典型场景:
+    1. 用户画像(头=职业 心=动机 手=场景 腿=地域)
+    2. 能力地图(头=推理 眼=视觉 耳=语音 手=工具 腿=Agent)
+    3. 职业风险热图(颜色深浅 = 被 AI 取代风险)
+    4. 团队 pictogram(N 个小人代表 N×100 人)
+
+  ── 关键设计铁律(必看!) ──
+  1. 人体 SVG 永远直接抄 OpenMoji,不要自己手画 → 见 [`references/svg-aesthetics.md`]
+     curl https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/black/svg/1F9CD.svg
+     原 viewBox 是 72×72(标准人物)。
+
+  2. **viewBox 必须用 OpenMoji 原坐标系**(72×72),不要把人体 transform scale 后再画高亮 ——
+     高亮坐标会和身体对不齐。
+     正确做法:整个 SVG viewBox="0 0 72 N"(N = 72-100),所有内容(高亮圆 / 人体 / 图例)都用原始小坐标。
+     人体部位关键点(OpenMoji 1F9CD 原坐标):
+       头中心 (35.4, 10.65) · 头半径 ≈ 3
+       眼睛 (33, 10) (37.8, 10) · 半径 ~1.6
+       耳朵 (31, 11) (39.8, 11) · 半径 ~1.4
+       胸/心 (35.4, 25) · 半径 ~5
+       手   (26.5, 38) (44.3, 38) · 半径 ~3.5
+       脚   (33.4, 62) (37.4, 62) · 半径 ~3.5
+
+  3. **部位高亮用透明圆形,放在人体 path 后面**(z 序在底)
+     fill-opacity: 0.15-0.35;颜色用主题色 hue(蓝/绿/橙/紫/红/粉)
+     不要用 clip-path — 偶尔渲染怪;透明圆叠加最稳。
+
+  4. **CSS 容器用 grid:1fr SVG固定宽 1fr** 让 SVG 居中,左右标签各占 1 列
+     标签卡片用 justify-self: end/start 让它们贴近 SVG 边缘
+     SVG 用 preserveAspectRatio="xMidYMid meet" 保持比例不变形
+
+  5. **若标签 ≥ 5 个**,用 grid-template-rows: 1fr 1fr 1fr 让左右各放 2-3 个标签错落分布
+     标签 ≤ 4 个时左右各 2 个,上下排列即可。
+-->
+<div class="slide" id="sX">
+  <div class="slide-label">{副标题英文} · {大类名}</div>
+  <div class="slide-title">{标题} — <span>{核心观点}</span></div>
+  <div class="slide-subtitle">
+    {一句简介 · 标签数 · 数据来源}
+  </div>
+
+  <div class="hp-board">
+    <div class="hp-figure">
+      <!-- 5 个标签卡片 -->
+      <div class="hp-tag hp-tag-tl">
+        <div class="hp-tag-num">01</div>
+        <div class="hp-tag-h">{标签 1 标题}</div>
+        <div class="hp-tag-num-big">{核心数字}</div>
+        <div class="hp-tag-meta">{解释}</div>
+      </div>
+      <div class="hp-tag hp-tag-ml">
+        <div class="hp-tag-num">02</div>
+        <div class="hp-tag-h">{标签 2 标题}</div>
+        <div class="hp-tag-num-big">{核心数字}</div>
+        <div class="hp-tag-meta">{解释}</div>
+      </div>
+      <div class="hp-tag hp-tag-bl">
+        <div class="hp-tag-num">03</div>
+        <div class="hp-tag-h">{标签 3 标题}</div>
+        <div class="hp-tag-num-big">{核心数字}</div>
+        <div class="hp-tag-meta">{解释}</div>
+      </div>
+      <div class="hp-tag hp-tag-tr">
+        <div class="hp-tag-num">04</div>
+        <div class="hp-tag-h">{标签 4 标题}</div>
+        <div class="hp-tag-num-big">{核心数字}</div>
+        <div class="hp-tag-meta">{解释}</div>
+      </div>
+      <div class="hp-tag hp-tag-br">
+        <div class="hp-tag-num">05</div>
+        <div class="hp-tag-h">{标签 5 标题}</div>
+        <div class="hp-tag-num-big">{核心数字}</div>
+        <div class="hp-tag-meta">{解释}</div>
+      </div>
+
+      <!-- ═══ 中央人体 SVG (viewBox 72×80,OpenMoji 原坐标系) ═══ -->
+      <svg class="hp-svg" viewBox="0 0 72 80" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <!-- 引线(可选,在最底层) -->
+        <g stroke="var(--accent)" stroke-width="0.35" stroke-dasharray="1.2,1.2" fill="none" opacity="0.45">
+          <path d="M 6 11 Q 22 11 33 11" />
+          <path d="M 6 28 Q 22 25 31 25" />
+          <path d="M 6 60 Q 22 60 33 62" />
+          <path d="M 66 38 Q 50 38 44 38" />
+          <path d="M 66 60 Q 50 60 38 62" />
+        </g>
+
+        <!-- 部位高亮(在人体下面,fill-opacity 0.15-0.35) -->
+        <g>
+          <circle cx="35.4" cy="10.65" r="8"   fill="#3b82f6" fill-opacity="0.18"/>  <!-- 头 -->
+          <circle cx="35.4" cy="25"    r="6.5" fill="#10b981" fill-opacity="0.20"/>  <!-- 心 -->
+          <circle cx="44.3" cy="38"    r="3.5" fill="#f59e0b" fill-opacity="0.32"/>  <!-- 右手 -->
+          <circle cx="33.4" cy="62"    r="3.5" fill="#8b5cf6" fill-opacity="0.28"/>  <!-- 左脚 -->
+          <circle cx="37.4" cy="62"    r="3.5" fill="#ec4899" fill-opacity="0.28"/>  <!-- 右脚 -->
+        </g>
+
+        <!-- OpenMoji 1F9CD 人体(原坐标,直接 inline) -->
+        <circle cx="35.4039" cy="10.6511" r="2.969"
+                fill="none" stroke="#0f172a" stroke-width="1.6"/>
+        <path fill="none" stroke="#0f172a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
+          d="M40.37,23.5891l1.9,38c.055,1.1-.575,2-1.4,2a2.076,2.076,0,0,1-1.729-1.987l-2.542-22.031c-.129-1.093-.679-1.987-1.229-1.987s-1.103.894-1.229,1.987l-2.539,22.031a2.076,2.076,0,0,1-1.729,1.987c-.825,0-1.455-.9-1.4-2l1.9-38"/>
+        <path fill="none" stroke="#0f172a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
+          d="M26.3729,41.5891l.792-19a5.274,5.274,0,0,1,5.208-5h6"/>
+        <path fill="none" stroke="#0f172a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
+          d="M38.3,17.589a5.274,5.274,0,0,1,5.208,5l.792,19"/>
+      </svg>
+    </div>
+
+    <!-- 底部一句话总结 -->
+    <div class="hp-foot">
+      <span class="hp-foot-tag">画像总结</span>
+      <span class="hp-foot-text">
+        {一句话 · 让读者带走的核心判断 · 含 <strong>关键数字加粗</strong>}
+      </span>
+    </div>
+  </div>
+</div>
+
+<style>
+/* human-portrait 模板样式 — 复制到 src/styles/slide-N.css,把所有 #sX 改成 #sN */
+
+#sX .hp-board {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-top: 8px;
+}
+
+/* ── 3 列 × 3 行布局:中央 SVG 固定宽,左右 1fr 各放标签 ── */
+#sX .hp-figure {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 340px 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 0;
+  min-height: 0;
+  position: relative;
+}
+
+#sX .hp-svg {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  width: 100%;
+  height: 100%;
+  align-self: center;
+  justify-self: center;
+  max-height: 540px;
+}
+
+/* ── 5 个标签:4 角 + 中左 ── */
+#sX .hp-tag {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  box-shadow: var(--shadow-card);
+  align-self: center;
+  max-width: 280px;
+  border-left: 3px solid var(--accent);
+}
+#sX .hp-tag-tl { grid-column: 1; grid-row: 1; justify-self: end; border-left-color: #3b82f6; }
+#sX .hp-tag-ml { grid-column: 1; grid-row: 2; justify-self: end; border-left-color: #10b981; }
+#sX .hp-tag-bl { grid-column: 1; grid-row: 3; justify-self: end; border-left-color: #8b5cf6; }
+#sX .hp-tag-tr { grid-column: 3; grid-row: 1; justify-self: start; border-left-color: #f59e0b; }
+#sX .hp-tag-br { grid-column: 3; grid-row: 3; justify-self: start; border-left-color: #ec4899; }
+
+#sX .hp-tag-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+#sX .hp-tag-h {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+#sX .hp-tag-num-big {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+  margin: 4px 0 6px;
+  letter-spacing: -0.02em;
+}
+#sX .hp-tag-tl .hp-tag-num-big { color: #3b82f6; }
+#sX .hp-tag-ml .hp-tag-num-big { color: #10b981; }
+#sX .hp-tag-bl .hp-tag-num-big { color: #8b5cf6; }
+#sX .hp-tag-tr .hp-tag-num-big { color: #f59e0b; }
+#sX .hp-tag-br .hp-tag-num-big { color: #ec4899; }
+#sX .hp-tag-meta {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.55;
+}
+
+#sX .hp-foot {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 12px;
+}
+#sX .hp-foot-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent2);
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+#sX .hp-foot-text {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.7;
+}
+#sX .hp-foot-text strong {
+  color: var(--text);
+  font-weight: 700;
+}
+</style>
