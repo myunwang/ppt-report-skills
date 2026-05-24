@@ -1,0 +1,378 @@
+<!--
+  TEMPLATE · matrix-2x2 (波士顿 / GE-McKinsey 风战略矩阵)
+  用途：在 2 个连续维度上定位 N 个对象的页型
+        左:2×2 矩阵主体(4 象限 + N 个气泡)  右:战略洞察 3 卡 + 总结
+  典型场景：
+    - 竞品定位(估值×增速 / 用户×ARPU / 份额×增长)
+    - 业务段 BCG 矩阵(市场增长×相对份额)
+    - 客户分层(规模×粘性 / RFM 简化版)
+    - 项目优先级(收益×风险 / 投入×影响)
+
+  ── 设计要点(关键!) ──
+  1. 数据归一化:每个对象 (x, y) 必须先映射到 0-100% 才能 left/top 定位
+     left% = ((x - x_min) / (x_max - x_min)) * 100
+     top%  = 100 - ((y - y_min) / (y_max - y_min)) * 100  ← 注意 y 反向
+  2. 气泡大小用 data-size="sm|mid|big|huge" 表示规模量级,不连续映射
+  3. 标签默认在气泡下方;若气泡在象限上半部,用 .b-label-up 把标签放上方
+  4. 4 象限标题永远固定在象限角落(避免被气泡遮挡 → 数据气泡用 z-index:4)
+  5. 矩阵区 padding 至少 38px 给轴标签留位置;气泡 transform:translate(-50%,-50%) 居中定位
+-->
+<div class="slide" id="sX">
+  <div class="slide-label">战略定位 · STRATEGIC MATRIX</div>
+  <div class="slide-title">{标题} — <span>{核心观点}</span></div>
+  <div class="slide-subtitle">
+    横轴 <strong>{X 轴含义}</strong> · 纵轴 <strong>{Y 轴含义}</strong> · 气泡大小 = <strong>{规模度量}</strong> · {N} 个对象一图定位
+  </div>
+
+  <div class="matrix-board">
+
+    <!-- ═══ 左:矩阵主体 ═══ -->
+    <div class="matrix-area">
+
+      <!-- Y 轴标签(外缘左侧) -->
+      <div class="m-ylabel m-ylabel-top">{Y 高}<br><span>{阈值说明}</span></div>
+      <div class="m-ylabel m-ylabel-bot">{Y 低}<br><span>{阈值说明}</span></div>
+
+      <!-- X 轴标签(外缘底部) -->
+      <div class="m-xlabel m-xlabel-left">{X 低}<br><span>{阈值说明}</span></div>
+      <div class="m-xlabel m-xlabel-right">{X 高}<br><span>{阈值说明}</span></div>
+
+      <!-- 4 象限网格(自动十字交叉线) -->
+      <div class="m-grid">
+        <div class="m-quad q-tl">
+          <div class="m-qh">⚠ {左上象限名}</div>
+          <div class="m-qd">{左上象限战略含义}</div>
+        </div>
+        <div class="m-quad q-tr star">
+          <div class="m-qh">★ {右上象限名}</div>
+          <div class="m-qd">{右上象限战略含义}</div>
+        </div>
+        <div class="m-quad q-bl">
+          <div class="m-qh">🐂 {左下象限名}</div>
+          <div class="m-qd">{左下象限战略含义}</div>
+        </div>
+        <div class="m-quad q-br">
+          <div class="m-qh">🚀 {右下象限名}</div>
+          <div class="m-qd">{右下象限战略含义}</div>
+        </div>
+
+        <!-- ═══ N 个对象气泡 (重复 N 次,每个一行) ═══
+             data-size 决定气泡大小(huge/big/mid/sm)
+             style="left:X%; top:Y%;" 必须按上面公式归一后填
+             b-label-up 类:标签放上方(避免遮挡) -->
+
+        <!-- 示例:对象 A,中等规模,右上明星位 -->
+        <div class="m-bubble b-a" style="left:80%; top:20%;" data-size="huge">
+          <div class="b-dot"></div>
+          <div class="b-label">
+            <div class="b-name">{对象 A}</div>
+            <div class="b-meta">{$ X · Y× · +Z%}</div>
+          </div>
+        </div>
+
+        <!-- 示例:对象 B,标签上置避免重叠 -->
+        <div class="m-bubble b-b b-label-up" style="left:64%; top:22%;" data-size="sm">
+          <div class="b-dot"></div>
+          <div class="b-label">
+            <div class="b-name">{对象 B}</div>
+            <div class="b-meta">{$ X · Y× · +Z%}</div>
+          </div>
+        </div>
+
+        <!-- 示例:虚化参考对象(无独立估值/数据不完整) -->
+        <div class="m-bubble b-c ref" style="left:38%; top:72%;" data-size="mid">
+          <div class="b-dot"></div>
+          <div class="b-label">
+            <div class="b-name">{对象 C · 参考}</div>
+            <div class="b-meta">{说明}</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ 右:战略洞察 3 卡 + 总结 ═══ -->
+    <div class="matrix-side">
+      <div class="ms-h"><span class="ms-dot"></span>三个战略洞察</div>
+
+      <div class="ms-card">
+        <div class="ms-num">01</div>
+        <div class="ms-body">
+          <div class="ms-title">{洞察 1 标题}</div>
+          <div class="ms-text">{论据 + 数字 + <strong>可执行结论</strong>}</div>
+        </div>
+      </div>
+
+      <div class="ms-card">
+        <div class="ms-num">02</div>
+        <div class="ms-body">
+          <div class="ms-title">{洞察 2 标题}</div>
+          <div class="ms-text">{论据 + 数字 + <strong>可执行结论</strong>}</div>
+        </div>
+      </div>
+
+      <div class="ms-card">
+        <div class="ms-num">03</div>
+        <div class="ms-body">
+          <div class="ms-title">{洞察 3 标题}</div>
+          <div class="ms-text">{论据 + 数字 + <strong>可执行结论</strong>}</div>
+        </div>
+      </div>
+
+      <div class="ms-foot">
+        <strong>一句话:</strong> {全页核心结论 — 一句话能让读者带走的判断}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+/* matrix-2x2 模板样式 — 把下面整块拷到你的 src/styles/slide-N.css 前面,
+   并把所有 #sX 替换为 #sN */
+
+#sX .matrix-board {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 20px;
+  min-height: 0;
+  margin-top: 8px;
+}
+
+/* ═══ 左:矩阵主体 ═══ */
+#sX .matrix-area {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 38px 38px 38px 90px;
+  box-shadow: var(--shadow-card);
+  min-height: 0;
+}
+
+/* ── 轴标签 ── */
+#sX .m-ylabel {
+  position: absolute;
+  left: 6px;
+  width: 78px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+  line-height: 1.35;
+}
+#sX .m-ylabel span {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 0.04em;
+}
+#sX .m-ylabel-top { top: 44px; }
+#sX .m-ylabel-bot { bottom: 44px; }
+
+#sX .m-xlabel {
+  position: absolute;
+  bottom: 6px;
+  width: 130px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+  line-height: 1.35;
+}
+#sX .m-xlabel span {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 0.04em;
+}
+#sX .m-xlabel-left  { left: 90px; }
+#sX .m-xlabel-right { right: 38px; }
+
+/* ── 4 象限网格(自动十字交叉) ── */
+#sX .m-grid {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background:
+    linear-gradient(to right, transparent calc(50% - 0.5px), var(--text3) calc(50% - 0.5px), var(--text3) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom, transparent calc(50% - 0.5px), var(--text3) calc(50% - 0.5px), var(--text3) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+  background-color: var(--surface2);
+}
+
+/* ── 4 象限微淡底色 ── */
+#sX .m-quad {
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+  overflow: hidden;
+}
+#sX .m-quad.q-tl { background: rgba(220,38,38,0.04); }
+#sX .m-quad.q-tr { background: rgba(37,99,235,0.06); }
+#sX .m-quad.q-bl { background: rgba(5,150,105,0.04); }
+#sX .m-quad.q-br { background: rgba(217,119,6,0.04); }
+#sX .m-qh {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+#sX .q-tl .m-qh { color: var(--danger); }
+#sX .q-tr .m-qh { color: var(--accent); }
+#sX .q-bl .m-qh { color: var(--accent3); }
+#sX .q-br .m-qh { color: var(--warn); }
+#sX .m-qd {
+  font-size: 10px;
+  color: var(--text3);
+  line-height: 1.5;
+  max-width: 88%;
+}
+
+/* ═══ 气泡(对象定位) ═══ */
+#sX .m-bubble {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+#sX .b-dot {
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--surface);
+  box-shadow: 0 2px 8px rgba(15,23,42,0.18), 0 0 0 1px var(--border);
+}
+#sX .m-bubble[data-size="huge"] .b-dot { width: 36px; height: 36px; }
+#sX .m-bubble[data-size="big"]  .b-dot { width: 28px; height: 28px; }
+#sX .m-bubble[data-size="mid"]  .b-dot { width: 22px; height: 22px; }
+#sX .m-bubble[data-size="sm"]   .b-dot { width: 16px; height: 16px; }
+
+/* 用 b-N 类按对象配色(示例,实际按需扩展) */
+#sX .b-a .b-dot { background: var(--accent); }
+#sX .b-b .b-dot { background: var(--warn); }
+#sX .b-c .b-dot { background: var(--text3); }
+#sX .m-bubble.ref .b-dot { opacity: 0.55; border-style: dashed; }
+
+#sX .b-label {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.08);
+  position: relative;
+  z-index: 5;
+}
+#sX .b-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.15;
+}
+#sX .b-meta {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text3);
+  font-weight: 600;
+  margin-top: 1px;
+  letter-spacing: 0.02em;
+}
+#sX .m-bubble.ref .b-label { opacity: 0.7; }
+
+/* 标签上置(防遮挡) */
+#sX .m-bubble.b-label-up { flex-direction: column-reverse; }
+
+/* ═══ 右:战略解读卡 ═══ */
+#sX .matrix-side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+#sX .ms-h {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+}
+#sX .ms-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent2);
+  margin-right: 6px;
+}
+#sX .ms-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  box-shadow: var(--shadow-card);
+  flex: 1;
+}
+#sX .ms-card:nth-child(3) { border-left-color: var(--accent3); }
+#sX .ms-card:nth-child(4) { border-left-color: var(--warn); }
+#sX .ms-num {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.45;
+  flex-shrink: 0;
+}
+#sX .ms-card:nth-child(3) .ms-num { color: var(--accent3); }
+#sX .ms-card:nth-child(4) .ms-num { color: var(--warn); }
+#sX .ms-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+#sX .ms-text {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+#sX .ms-text strong {
+  color: var(--accent);
+  font-weight: 700;
+}
+#sX .ms-card:nth-child(3) .ms-text strong { color: var(--accent3); }
+#sX .ms-card:nth-child(4) .ms-text strong { color: var(--warn); }
+#sX .ms-foot {
+  background: var(--surface2);
+  border-left: 3px solid var(--accent2);
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.6;
+  flex-shrink: 0;
+}
+#sX .ms-foot strong {
+  color: var(--accent2);
+  font-weight: 700;
+}
+</style>
