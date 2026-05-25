@@ -136,17 +136,31 @@ curl https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/black/svg/1F9C
 
 每个部位画一个透明圆(`fill-opacity: 0.15-0.45`,实色 0.5-0.95),颜色对应该部位语义。
 
-### 3.4 部位高亮 z 序:必须在人体下面
+### 3.4 ⭐ 引线 + 色点 > 部位高亮圆(v3 教训)
+
+**v2 用部位透明圆光环 → 用户反馈:"那些原点都不需要"**。
+**v3 改用引线 + 终点小色点** → 既指出部位又保持剪影干净。
 
 ```svg
 <svg>
-  <g class="highlights">...透明圆...</g>   <!-- 先画,在底 -->
-  <circle cx="35.4" cy="10.65" r="2.969" .../>  <!-- 头 -->
-  <path .../>                              <!-- 身体 -->
+  <!-- 引线 + 终点圆点(在剪影上层,因为是指示性元素) -->
+  <g fill="none" stroke-linecap="round">
+    <!-- 起点贴 SVG 边缘 → 终点圆点贴部位 -->
+    <path d="M 0 175 L 280 175" stroke="#3b82f6" stroke-width="3" stroke-dasharray="8,6" opacity="0.7"/>
+    <circle cx="285" cy="175" r="9" fill="#3b82f6"/>
+    ...
+  </g>
+
+  <!-- 剪影(由 JS 注入到这里下方) -->
 </svg>
 ```
 
-否则透明高亮盖住人体描边,看起来像"皮肤"而不是"光环"。
+**色彩呼应规则:** 引线颜色 = 对应标签卡片的 `border-left-color` → 视觉锚定。
+
+**起点位置规则:**
+- 标签在 SVG 左侧:起点 `x=0`(竖向 viewBox)或 `x=80`(横向 viewBox)
+- 标签在 SVG 右侧:起点 `x=viewBoxWidth`(竖向)或 `x=viewBoxWidth-80`(横向)
+- 横向 viewBox 的女剪影,引线易交叉 → 用**短引出线**(从部位起 → 引到剪影外缘色点)
 
 ### 3.5 标签布局:3×3 grid 让标签错落
 

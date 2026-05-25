@@ -83,25 +83,28 @@
            viewBox 由 injectSilhouette() 自动设置,坐标按 kind 各自的系
            common.js 须含 window.SILHOUETTE_DATA + window.injectSilhouette(svg, kind) -->
       <svg class="hp-svg silhouette-host" data-kind="man" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-        <!-- 引线(可选;此处坐标按男版 viewBox 708×1066) -->
-        <g stroke="var(--accent)" stroke-width="2.4" stroke-dasharray="8,8" fill="none" opacity="0.5">
-          <path d="M 0 180 Q 150 180 290 180" />     <!-- 头 ← 左 -->
-          <path d="M 0 450 Q 150 440 270 430" />     <!-- 心 ← 左中 -->
-          <path d="M 0 850 Q 150 850 290 870" />     <!-- 左腿 ← 左下 -->
-          <path d="M 708 350 Q 580 350 480 360" />   <!-- 西装肩 ← 右上 -->
-          <path d="M 708 700 Q 580 700 460 680" />   <!-- 提包 ← 右下 -->
+        <!-- 引线 + 终点圆点(无背景圆,极简风) — 坐标按男版 viewBox 708×1066
+             每条引线颜色匹配对应标签的 border-left-color,做色彩呼应 -->
+        <g fill="none" stroke-linecap="round">
+          <!-- 01 头(蓝) — 标签在左上 -->
+          <path d="M 0 175 L 280 175" stroke="#3b82f6" stroke-width="3" stroke-dasharray="8,6" opacity="0.7"/>
+          <circle cx="285" cy="175" r="9" fill="#3b82f6"/>
+          <!-- 02 心(绿) — 标签在左中 -->
+          <path d="M 0 440 L 270 440" stroke="#10b981" stroke-width="3" stroke-dasharray="8,6" opacity="0.7"/>
+          <circle cx="275" cy="440" r="9" fill="#10b981"/>
+          <!-- 03 腿(紫) — 标签在左下 -->
+          <path d="M 0 870 L 285 870" stroke="#8b5cf6" stroke-width="3" stroke-dasharray="8,6" opacity="0.7"/>
+          <circle cx="290" cy="870" r="9" fill="#8b5cf6"/>
+          <!-- 04 西装肩(橙) — 标签在右上 -->
+          <path d="M 708 350 L 490 350" stroke="#f59e0b" stroke-width="3" stroke-dasharray="8,6" opacity="0.7"/>
+          <circle cx="485" cy="350" r="9" fill="#f59e0b"/>
+          <!-- 05 提包/手(粉) — 标签在右下 -->
+          <path d="M 708 700 L 480 700" stroke="#ec4899" stroke-width="3" stroke-dasharray="8,6" opacity="0.7"/>
+          <circle cx="475" cy="700" r="9" fill="#ec4899"/>
         </g>
 
-        <!-- 部位高亮(在剪影下面!坐标按男版 viewBox) -->
-        <g>
-          <circle cx="370" cy="170" r="105" fill="#3b82f6" fill-opacity="0.28"/>           <!-- 头 -->
-          <ellipse cx="380" cy="430" rx="135" ry="100" fill="#10b981" fill-opacity="0.22"/> <!-- 胸 -->
-          <ellipse cx="480" cy="350" rx="60" ry="80" fill="#f59e0b" fill-opacity="0.28"/>   <!-- 右肩 -->
-          <ellipse cx="370" cy="870" rx="80" ry="130" fill="#8b5cf6" fill-opacity="0.25"/>  <!-- 双腿 -->
-          <circle cx="460" cy="700" r="65" fill="#ec4899" fill-opacity="0.32"/>             <!-- 提包/手 -->
-        </g>
-
-        <!-- 剪影由 JS 注入:initSlideN() 调用 injectSilhouette(svg, data-kind) -->
+        <!-- 剪影由 JS 注入:initSlideN() 调用 injectSilhouette(svg, data-kind)
+             注意:不再用部位高亮圆 — 引线 + 小色点已足够指示部位,剪影保持干净 -->
       </svg>
     </div>
 
