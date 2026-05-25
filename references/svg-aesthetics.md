@@ -281,7 +281,112 @@ initSlide11 = () => {
 - [ ] stroke 用 `linecap:round + linejoin:round`(无硬角)
 - [ ] 缩放到 50px 仍能看清主体(剪影测试)
 
-## 七、紧急救援:画完发现还是丑怎么办
+## 八、🔑 「剪影是怎么画出来的」完整方法论 ⭐⭐⭐
+
+> 这一节回答"我怎么知道用哪个剪影 + 怎么挑出来 + 怎么塞进 deck"。
+> 来源:实战教训(从火柴人 → 通用剪影 → 职场男女剪影 三轮迭代沉淀)。
+> 灵感参考:[OmniSVG (NeurIPS 2025)](https://github.com/OmniSVG/OmniSVG) — VLM 端到端生成 SVG;
+> 它需要 17-26GB GPU,本地跑不动,但**核心思想可以照搬**:**SVG 命令 token 化,先 plan 结构再补 geometry**。
+> 我们用「人工版」的同一思想 — 先选剪影骨架,再叠部位高亮/标签。
+
+### 方法论 5 步(下次任意"人体画像"页直接套):
+
+**Step 1 · 确定档次** (svg-aesthetics 第三节)
+- 单人主体占 ≥ 1/4 slide 面积 → **剪影级**(Wikimedia/OpenClipart/UXWing)
+- N×100 人 pictogram / 每人 < 50px → **火柴人**(OpenMoji)
+
+**Step 2 · 按"职业气质"挑剪影**(本节核心)
+
+按 PPT 主题精准搜素材库 — **不要拿通用人体冒充职场**:
+
+| 主题气质 | 关键词 | 推荐素材 |
+|---|---|---|
+| 通用 / 中性医学 | standing human silhouette | [Wikimedia: Silhouette_of_a_standing_man](https://commons.wikimedia.org/wiki/File:Silhouette_of_a_standing_man.svg) |
+| 男 · 职场西装精英 ⭐ | businessman briefcase silhouette | [OpenClipart 321053 Businessman Stands](https://openclipart.org/detail/321053/businessman-stands) |
+| 女 · 长发职业范 ⭐ | young businesswoman silhouette | [OpenClipart 310702 Young Businesswoman](https://openclipart.org/detail/310702/) |
+| 女 · 职场胸像(avatar) | business women silhouette | [UXWing business-women-silhouette](https://uxwing.com/business-women-silhouette-icon/) |
+| 男 · 跑动 | running businessman | OpenClipart 216499 |
+| 庆功 / 成就 | businessman trophy stars | UXWing successful-businessman |
+| 头像(头肩) | businesswoman icon | UXWing businesswoman / business-women-with-tie |
+
+**搜素材库的搜索词模式:**
+```
+"{形态}" {气质} silhouette svg
+形态: standing / walking / sitting / running / hands-on-hips
+气质: business / professional / casual / executive / fitness
+```
+
+**Step 3 · 抓 + 验证**
+
+```bash
+# OpenClipart 直接下载格式
+curl -fsSL -A "Mozilla/5.0" -L "https://openclipart.org/download/${ID}/" -o "person.svg"
+
+# UXWing 直接下载格式
+curl -fsSL -A "Mozilla/5.0" "https://uxwing.com/wp-content/themes/uxwing/download/{category}/{slug}.svg" -o "person.svg"
+
+# 验证质量(必看)
+grep -c '<path' person.svg     # ≤ 3 个 path 最佳;> 10 个就是详细插画,不是剪影
+grep -o 'viewBox="[^"]*"' person.svg  # 必须有 viewBox
+wc -c person.svg                # 1-20K 字节最佳;> 100K 通常是详细插画
+```
+
+**Step 4 · path 抽到 common.js(若 N 个 slide 复用)**
+
+```js
+// 1. 用 Python 提取 path d (避免手动复制丢字符):
+//    src = Path('person.svg').read_text()
+//    d = re.search(r'<path[^>]*\sd="([^"]+)"', src, re.S).group(1)
+// 2. inject 到 common.js:
+
+window.SILHOUETTE_MAN_PATH = "..."; // 西装男(OC 321053)
+window.SILHOUETTE_WOMAN_PATH = "..."; // 长发职业女(OC 310702)
+window.SILHOUETTE_VIEWBOX_MAN = "0 0 708 1066";
+window.SILHOUETTE_VIEWBOX_WOMAN = "0 0 2334 1638";
+
+window.injectSilhouette = function(svgEl, kind = 'man', color, opacity) {
+  if (!svgEl) return;
+  const path = kind === 'woman' ? SILHOUETTE_WOMAN_PATH : SILHOUETTE_MAN_PATH;
+  const vb = kind === 'woman' ? SILHOUETTE_VIEWBOX_WOMAN : SILHOUETTE_VIEWBOX_MAN;
+  svgEl.setAttribute('viewBox', vb);
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p.setAttribute('d', path);
+  p.setAttribute('fill', color || '#0f172a');
+  if (opacity != null) p.setAttribute('fill-opacity', opacity);
+  svgEl.appendChild(p);
+};
+```
+
+**Step 5 · 找部位锚点坐标**
+
+每个剪影 viewBox 不同,部位坐标必须重新校准。**最快方法:画网格目测**。
+
+```html
+<svg viewBox="0 0 708 1066">
+  <!-- 透明网格,只在校准时显示,完成后删掉 -->
+  <g stroke="#cbd5e1" stroke-width="2" opacity="0.4">
+    <line x1="0" y1="100" x2="708" y2="100"/>
+    <line x1="0" y1="200" x2="708" y2="200"/>
+    ...
+    <line x1="350" y1="0" x2="350" y2="1066"/>
+  </g>
+  <text x="5" y="100" font-size="20">y=100</text>
+  ...
+  <!-- 剪影 -->
+  <path fill="#0f172a" d="..."/>
+</svg>
+```
+
+截图目测 → 记下头/胸/手/腿坐标 → 高亮圆按这些坐标画 → 删网格。
+
+### 关键认知
+
+1. **剪影不是 AI 画出来的,是「找 + 适配」出来的**。LLM 写 path 永远丑(除非是 OmniSVG 那种 VLM)。
+2. **气质决定一切**。"通用人体"和"职场男"在视觉档次上差 10 倍 — 选对气质 > 改进 path。
+3. **男女应分开剪影**。混用一个剪影代表所有用户 → 看起来像数据库 user 占位图。男版「西装提包」+ 女版「长发耸肩」是经典咨询报告搭配。
+4. **OmniSVG 的启示:先 plan 结构再补 geometry**。我们的 5 步就是它的人工版 —— 先选剪影(结构),再叠高亮(geometry)。
+
+## 九、紧急救援:画完发现还是丑怎么办
 
 按优先级排查:
 1. **viewBox 贴边了?** → 把内容整体缩小到 80% + 居中

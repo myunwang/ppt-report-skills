@@ -76,30 +76,32 @@
         <div class="hp-tag-meta">{解释}</div>
       </div>
 
-      <!-- ═══ 中央人体 SVG (剪影版 v2,viewBox 210×297) ═══
-           剪影 path 来自 Wikimedia Commons CC0:Silhouette_of_a_standing_man.svg
-           注意:path 太长(8.9K),建议抽到 common.js 作为共享常量,JS 注入 -->
-      <svg class="hp-svg silhouette-host" viewBox="0 0 210 297" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-        <!-- 引线(可选,在最底层;站立男坐标系) -->
-        <g stroke="var(--accent)" stroke-width="0.8" stroke-dasharray="3,3" fill="none" opacity="0.50">
-          <path d="M 0 35 Q 40 35 70 38" />     <!-- 头 ← 左 -->
-          <path d="M 0 130 Q 40 130 60 130" />  <!-- 心 ← 左中 -->
-          <path d="M 0 240 Q 40 240 75 240" />  <!-- 左腿 ← 左下 -->
-          <path d="M 210 100 Q 170 100 150 100" /> <!-- 右肩 ← 右上 -->
-          <path d="M 210 240 Q 170 240 135 240" /> <!-- 右腿 ← 右下 -->
+      <!-- ═══ 中央人体 SVG (剪影 v3 · 男西装提包 or 女长发耸肩) ═══
+           剪影来源:OpenClipart CC0 — 321053 / 310702
+           data-kind="man" → viewBox 708.66×1066.11(竖向全身)
+           data-kind="woman" → viewBox 2334.69×1638.97(横向半身)
+           viewBox 由 injectSilhouette() 自动设置,坐标按 kind 各自的系
+           common.js 须含 window.SILHOUETTE_DATA + window.injectSilhouette(svg, kind) -->
+      <svg class="hp-svg silhouette-host" data-kind="man" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <!-- 引线(可选;此处坐标按男版 viewBox 708×1066) -->
+        <g stroke="var(--accent)" stroke-width="2.4" stroke-dasharray="8,8" fill="none" opacity="0.5">
+          <path d="M 0 180 Q 150 180 290 180" />     <!-- 头 ← 左 -->
+          <path d="M 0 450 Q 150 440 270 430" />     <!-- 心 ← 左中 -->
+          <path d="M 0 850 Q 150 850 290 870" />     <!-- 左腿 ← 左下 -->
+          <path d="M 708 350 Q 580 350 480 360" />   <!-- 西装肩 ← 右上 -->
+          <path d="M 708 700 Q 580 700 460 680" />   <!-- 提包 ← 右下 -->
         </g>
 
-        <!-- 部位高亮(在剪影下面!) — 坐标参考 OpenAI deck slide-11/13/14 -->
+        <!-- 部位高亮(在剪影下面!坐标按男版 viewBox) -->
         <g>
-          <circle cx="105" cy="40" r="35" fill="#3b82f6" fill-opacity="0.30"/>                <!-- 头 -->
-          <ellipse cx="105" cy="125" rx="48" ry="35" fill="#10b981" fill-opacity="0.25"/>     <!-- 胸 -->
-          <circle cx="155" cy="100" r="20" fill="#f59e0b" fill-opacity="0.35"/>               <!-- 右肩/手 -->
-          <ellipse cx="80" cy="240" rx="20" ry="40" fill="#8b5cf6" fill-opacity="0.28"/>      <!-- 左腿 -->
-          <ellipse cx="130" cy="240" rx="20" ry="40" fill="#ec4899" fill-opacity="0.28"/>     <!-- 右腿 -->
+          <circle cx="370" cy="170" r="105" fill="#3b82f6" fill-opacity="0.28"/>           <!-- 头 -->
+          <ellipse cx="380" cy="430" rx="135" ry="100" fill="#10b981" fill-opacity="0.22"/> <!-- 胸 -->
+          <ellipse cx="480" cy="350" rx="60" ry="80" fill="#f59e0b" fill-opacity="0.28"/>   <!-- 右肩 -->
+          <ellipse cx="370" cy="870" rx="80" ry="130" fill="#8b5cf6" fill-opacity="0.25"/>  <!-- 双腿 -->
+          <circle cx="460" cy="700" r="65" fill="#ec4899" fill-opacity="0.32"/>             <!-- 提包/手 -->
         </g>
 
-        <!-- 剪影 path 由 JS 注入:initSlideN() 调用 injectSilhouette(svg, color, opacity) -->
-        <!-- common.js 须有:window.SILHOUETTE_MAN_PATH + window.injectSilhouette() -->
+        <!-- 剪影由 JS 注入:initSlideN() 调用 injectSilhouette(svg, data-kind) -->
       </svg>
     </div>
 

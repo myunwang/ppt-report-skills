@@ -16,18 +16,32 @@
 ✗ 不适合:对象本身是产品/服务(用价值流 / 流程图)
 ✗ 不适合:讲故事不需要"人"作为锚点
 
-## 二、SVG 人体的两个"档次"⭐ 关键决策(实战教训)
+## 二、SVG 人体的三档 × 男女分身 ⭐ 关键决策(实战教训)
 
-第一版 4 页全用 OpenMoji 火柴人 → 用户反馈"丑萌"。第二版改用 Wikimedia CC0 站立男剪影 → 视觉档次直接咨询报告级。
+三轮迭代教训:
+- v1 全用 OpenMoji 火柴人 → 用户反馈"丑萌"
+- v2 改 Wikimedia 通用站立人剪影 → 视觉好但"姿势丑、没气质"
+- v3 ⭐ 改 OpenClipart 职场男女剪影 → 真正的咨询报告级气质
 
-| 档次 | 用途 | 来源 | viewBox |
-|---|---|---|---|
-| 🥇 **剪影级**(主体大) | 单人画像 / 拟人化能力 / 风险热图 | [Wikimedia CC0 站立男](https://commons.wikimedia.org/wiki/File:Silhouette_of_a_standing_man.svg) | 210×297 |
-| 🥉 **火柴人**(主体小) | N×100 人 pictogram(团队结构) | [OpenMoji 1F9CD](https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/black/svg/1F9CD.svg) | 72×72 |
+**最佳实践:** 男 / 女分身 + 按主体大小选档次。
 
-**判断标准:** 单个人体在 slide 中占的视觉面积 ≥ 1/4 → 必须用剪影;若每个人 < 50px → 用火柴人(剪影会糊成黑点)。
+| 档次 | 用途 | 推荐素材 |
+|---|---|---|
+| 🥇 **职场剪影级**(主体大) | 用户画像 / 能力地图 / 风险热图 | [OpenClipart 321053 男西装提包](https://openclipart.org/detail/321053/) + [310702 女长发耸肩](https://openclipart.org/detail/310702/) |
+| 🥈 通用剪影 | 中性 / 医学 / 解剖类(非职场主题) | [Wikimedia Standing Man Silhouette](https://commons.wikimedia.org/wiki/File:Silhouette_of_a_standing_man.svg) |
+| 🥉 **火柴人**(主体小) | N×100 人 pictogram(团队结构) | [OpenMoji 1F9CD](https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/black/svg/1F9CD.svg) |
 
-详见 [`svg-aesthetics.md`](svg-aesthetics.md) 第三节。
+**判断标准:**
+- 单人体占 slide ≥ 1/4 面积,且 PPT 是商务主题 → **职场剪影级 + 按场景挑男 / 女**
+- 中性医学主题 → 通用剪影
+- 每个人 < 50px → 火柴人(剪影会糊)
+
+**男女配对:** 一份 deck 里若有 ≥ 2 张人像页,**交替男 / 女**(避免重复) — OpenAI deck v3:
+- slide-11 用户画像 → 男(西装提包,代表"知识工作者")
+- slide-13 能力地图 → 女(双手摊开,适合"能力展示")
+- slide-14 职业风险 → 男(同 slide-11 风格,贯穿)
+
+详见 [`svg-aesthetics.md`](svg-aesthetics.md) 第三 + 第八节(完整方法论)。
 
 ## 三、4 种变体(按 OpenAI deck v2 实现的)
 
@@ -70,23 +84,43 @@ curl https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/black/svg/1F9C
 
 ### 3.3 关键部位坐标表(直接抄)
 
-#### 剪影版(站立男 210×297) ⭐ 主用
+#### 男职场剪影(OpenClipart 321053,viewBox 708.66 × 1066.11)⭐ 主用
+
+姿势:背对正面 + 西装 + 提公文包 + 向前走。带肤色细节(头+手 #f2b383)。
+
+| 部位 | (cx, cy) | 高亮形状建议 |
+|---|---|---|
+| 头 | (370, 170) | circle r=105 |
+| 嘴喉 | (370, 250) | ellipse rx=50 ry=20 |
+| 心 / 胸 | (380, 430) | ellipse rx=135 ry=100 |
+| 右肩 | (480, 350) | ellipse rx=60 ry=80 |
+| 左手 | (290, 640) | circle r=60 |
+| 右手 / 提包 | (460, 700) | circle r=60-65 |
+| 双腿 | (370, 870) | ellipse rx=80 ry=130 |
+| 双脚 | (370, 1020) | ellipse rx=100 ry=30 |
+
+#### 女职场剪影(OpenClipart 310702,viewBox 2334.69 × 1638.97)⭐ 主用
+
+姿势:半身 + 长发 + 双手摊开耸肩。横向 viewBox(注意!)。
+
+| 部位 | (cx, cy) | 高亮形状建议 |
+|---|---|---|
+| 头 | (1150, 320) | circle r=280 |
+| 眼睛(双) | (1100, 290) / (1200, 290) | circle r=30 |
+| 耳朵(双,头侧) | (990, 340) / (1310, 340) | circle r=32 |
+| 心 / 胸 | (1150, 850) | circle r=100 |
+| 左手(摊开) | (450, 700) | circle r=100 |
+| 右手(摊开) | (1900, 700) | circle r=100 |
+| 半身底 | (1150, 1500) | ellipse rx=160 ry=80 |
+
+#### 通用剪影(Wikimedia,viewBox 210×297) - 旧版/备用
 
 | 部位 | (cx, cy) | 高亮形状建议 |
 |---|---|---|
 | 头 | (105, 40) | circle r=35 |
-| 眼睛(双) | (97, 38) / (113, 38) | circle r=3 |
-| 耳朵(双) | (83, 42) / (127, 42) | circle r=3 |
-| 嘴喉 | (105, 60) | ellipse rx=16 ry=8 |
-| 心/胸 | (105, 115) | circle r=14 |
-| 胸/腰 | (105, 125) | ellipse rx=48 ry=35 |
-| 右肩 | (155, 100) | circle r=20 |
-| 左手 | (55, 175) | circle r=12 |
-| 右手 | (155, 175) | circle r=12 |
-| 左腿 | (80, 240) | ellipse rx=20 ry=40 |
-| 右腿 | (130, 240) | ellipse rx=20 ry=40 |
-| 左脚 | (88, 275) | circle r=10 |
-| 右脚 | (122, 275) | circle r=10 |
+| 心 / 胸 | (105, 115) | circle r=14 |
+| 手(左右) | (55, 175) / (155, 175) | circle r=12 |
+| 腿(左右) | (80, 240) / (130, 240) | ellipse rx=20 ry=40 |
 
 #### 火柴人版(OpenMoji 72×72) — pictogram 用
 
