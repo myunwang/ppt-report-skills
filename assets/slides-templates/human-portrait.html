@@ -82,29 +82,33 @@
            data-kind="woman" → viewBox 2334.69×1638.97(横向半身)
            viewBox 由 injectSilhouette() 自动设置,坐标按 kind 各自的系
            common.js 须含 window.SILHOUETTE_DATA + window.injectSilhouette(svg, kind) -->
-      <svg class="hp-svg silhouette-host" data-kind="man" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-        <!-- 引线 + 终点圆点(无背景圆,极简风) — 坐标按男版 viewBox 708×1066
-             每条引线颜色匹配对应标签的 border-left-color,做色彩呼应 -->
+      <!-- ① Overlay 引线层 — 关键!引线必须真正连接「标签卡边缘 ↔ 剪影部位」
+           做法:在 .hp-figure 外层(必须 position:relative)加 absolute inset:0 SVG,
+                 用 viewBox="0 0 1000 1000" + preserveAspectRatio="none" 拉伸贴合容器,
+                 用 vector-effect="non-scaling-stroke" 保持虚线宽度独立于拉伸
+           坐标取百分比(0-1000):
+             x ≈ 280 是左卡片右边缘附近(标签 max-width 280px 撑满 1fr 列)
+             x ≈ 720 是右卡片左边缘附近
+             x ≈ 490-510 是中央剪影中线(刚好抵达剪影身体)
+             y 取每个标签的垂直中心(标签在 grid 3 行的 1/6 / 1/2 / 5/6) -->
+      <svg class="hp-leaders" viewBox="0 0 1000 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         <g fill="none" stroke-linecap="round">
-          <!-- 01 头(蓝) — 标签在左上 -->
-          <path d="M 0 175 L 280 175" stroke="#3b82f6" stroke-width="3" stroke-dasharray="8,6" opacity="0.7"/>
-          <circle cx="285" cy="175" r="9" fill="#3b82f6"/>
-          <!-- 02 心(绿) — 标签在左中 -->
-          <path d="M 0 440 L 270 440" stroke="#10b981" stroke-width="3" stroke-dasharray="8,6" opacity="0.7"/>
-          <circle cx="275" cy="440" r="9" fill="#10b981"/>
-          <!-- 03 腿(紫) — 标签在左下 -->
-          <path d="M 0 870 L 285 870" stroke="#8b5cf6" stroke-width="3" stroke-dasharray="8,6" opacity="0.7"/>
-          <circle cx="290" cy="870" r="9" fill="#8b5cf6"/>
-          <!-- 04 西装肩(橙) — 标签在右上 -->
-          <path d="M 708 350 L 490 350" stroke="#f59e0b" stroke-width="3" stroke-dasharray="8,6" opacity="0.7"/>
-          <circle cx="485" cy="350" r="9" fill="#f59e0b"/>
-          <!-- 05 提包/手(粉) — 标签在右下 -->
-          <path d="M 708 700 L 480 700" stroke="#ec4899" stroke-width="3" stroke-dasharray="8,6" opacity="0.7"/>
-          <circle cx="475" cy="700" r="9" fill="#ec4899"/>
+          <!-- 01 头(蓝) — 左上卡 → 头部 -->
+          <line x1="280" y1="180" x2="490" y2="180" stroke="#3b82f6" stroke-width="2" stroke-dasharray="6,5" opacity="0.75" vector-effect="non-scaling-stroke"/>
+          <!-- 02 心(绿) — 左中卡 → 胸 -->
+          <line x1="280" y1="500" x2="490" y2="500" stroke="#10b981" stroke-width="2" stroke-dasharray="6,5" opacity="0.75" vector-effect="non-scaling-stroke"/>
+          <!-- 03 腿(紫) — 左下卡 → 腿 -->
+          <line x1="280" y1="820" x2="490" y2="820" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="6,5" opacity="0.75" vector-effect="non-scaling-stroke"/>
+          <!-- 04 肩(橙) — 右上卡 → 肩 -->
+          <line x1="720" y1="320" x2="510" y2="320" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6,5" opacity="0.75" vector-effect="non-scaling-stroke"/>
+          <!-- 05 提包(粉) — 右下卡 → 手/包 -->
+          <line x1="720" y1="650" x2="510" y2="650" stroke="#ec4899" stroke-width="2" stroke-dasharray="6,5" opacity="0.75" vector-effect="non-scaling-stroke"/>
         </g>
+      </svg>
 
-        <!-- 剪影由 JS 注入:initSlideN() 调用 injectSilhouette(svg, data-kind)
-             注意:不再用部位高亮圆 — 引线 + 小色点已足够指示部位,剪影保持干净 -->
+      <!-- ② 中央剪影 SVG(只放剪影,不再放引线;引线已在 ① 跨容器 overlay) -->
+      <svg class="hp-svg silhouette-host" data-kind="man" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <!-- 剪影由 JS 注入:initSlideN() 调用 injectSilhouette(svg, data-kind) -->
       </svg>
     </div>
 
@@ -140,6 +144,16 @@
   position: relative;
 }
 
+/* Overlay 引线层(absolute 覆盖整个 figure,viewBox 拉伸贴合容器) */
+#sX .hp-leaders {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
 #sX .hp-svg {
   grid-column: 2;
   grid-row: 1 / 4;
@@ -148,6 +162,8 @@
   align-self: center;
   justify-self: center;
   max-height: 540px;
+  position: relative;
+  z-index: 2;
 }
 
 /* ── 5 个标签:4 角 + 中左 ── */

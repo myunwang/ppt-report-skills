@@ -136,31 +136,55 @@ curl https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/black/svg/1F9C
 
 每个部位画一个透明圆(`fill-opacity: 0.15-0.45`,实色 0.5-0.95),颜色对应该部位语义。
 
-### 3.4 ⭐ 引线 + 色点 > 部位高亮圆(v3 教训)
+### 3.4 ⭐ 引线必须在 .hp-figure 外层 overlay,不能在剪影 SVG 内部(v4 教训)
 
-**v2 用部位透明圆光环 → 用户反馈:"那些原点都不需要"**。
-**v3 改用引线 + 终点小色点** → 既指出部位又保持剪影干净。
+**v3 把引线放在剪影 SVG 内部 → 引线只到 SVG 边缘就断了,标签和剪影之间留下空白**。
+用户反馈:"线都没直到卡片上"。
 
-```svg
-<svg>
-  <!-- 引线 + 终点圆点(在剪影上层,因为是指示性元素) -->
-  <g fill="none" stroke-linecap="round">
-    <!-- 起点贴 SVG 边缘 → 终点圆点贴部位 -->
-    <path d="M 0 175 L 280 175" stroke="#3b82f6" stroke-width="3" stroke-dasharray="8,6" opacity="0.7"/>
-    <circle cx="285" cy="175" r="9" fill="#3b82f6"/>
-    ...
-  </g>
+**v4 改用 overlay 跨容器 SVG**:
+- 在 `.hp-figure`(grid 容器,`position: relative`)内加一个 `position: absolute; inset: 0` 的引线 SVG
+- viewBox 用 `0 0 1000 1000` + `preserveAspectRatio="none"` 拉伸贴合 figure 整体
+- `vector-effect="non-scaling-stroke"` 让虚线宽度独立于拉伸不变形
+- 引线坐标用百分比思维(0-1000):**x≈280 是左卡片右边缘,x≈720 是右卡片左边缘,x≈500 是剪影中线**
 
-  <!-- 剪影(由 JS 注入到这里下方) -->
-</svg>
+```html
+<div class="hp-figure">  <!-- position: relative; display: grid -->
+  <!-- 标签卡 5 个,grid 自动定位到 4 角 + 中左 -->
+  <div class="hp-tag hp-tag-tl">...</div>
+  ...
+
+  <!-- ① Overlay 引线 SVG(覆盖整个 figure,跨容器连接卡 ↔ 剪影) -->
+  <svg class="hp-leaders" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+    <g fill="none" stroke-linecap="round">
+      <line x1="280" y1="180" x2="490" y2="180"
+            stroke="#3b82f6" stroke-width="2" stroke-dasharray="6,5"
+            opacity="0.75" vector-effect="non-scaling-stroke"/>
+      ...
+    </g>
+  </svg>
+
+  <!-- ② 中央剪影 SVG(只放剪影本体) -->
+  <svg class="hp-svg silhouette-host" data-kind="man">
+    <!-- 剪影由 injectSilhouette() 注入 -->
+  </svg>
+</div>
 ```
 
-**色彩呼应规则:** 引线颜色 = 对应标签卡片的 `border-left-color` → 视觉锚定。
+```css
+.hp-figure { position: relative; ... }
+.hp-leaders { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.hp-svg { position: relative; z-index: 2; }   /* 让剪影盖在引线上层 */
+```
 
-**起点位置规则:**
-- 标签在 SVG 左侧:起点 `x=0`(竖向 viewBox)或 `x=80`(横向 viewBox)
-- 标签在 SVG 右侧:起点 `x=viewBoxWidth`(竖向)或 `x=viewBoxWidth-80`(横向)
-- 横向 viewBox 的女剪影,引线易交叉 → 用**短引出线**(从部位起 → 引到剪影外缘色点)
+**色彩呼应规则:** 引线颜色 = 对应标签卡片的 `border-left-color`。
+
+**起点坐标速查表**(基于 grid-template-columns: 1fr 340px 1fr):
+- 左 3 标签 → 引线起点 `x≈280`
+- 右 3 标签 → 引线起点 `x≈720`
+- 终点 ≈ `x=490-510`(剪影中线附近,贴住身体)
+- y 用每个标签的垂直中心:1/6 (180) · 1/2 (500) · 5/6 (820)
+
+**为什么不放剪影 SVG 内?** 剪影 SVG 的 viewBox 是 708×1066(男)或 2334×1638(女),只占 figure 中央列。引线超出 SVG 边界就被 viewBox 裁掉,无法到达标签卡。Overlay 用 figure 的百分比坐标 → 引线可自由穿越整个 figure 区域。
 
 ### 3.5 标签布局:3×3 grid 让标签错落
 
